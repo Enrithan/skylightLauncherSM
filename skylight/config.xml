@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://skylight.home/tv" version="1.17.0" viewmodes="maximized">
+    <!-- Lets Skylight ask the TV's own local services (on the TV itself) which apps are running. -->
+    <access origin="*" subdomains="true"/>
+    <tizen:application id="skylightTV.Skylight" package="skylightTV" required_version="3.0"/>
+    <name>Skylight</name>
+    <description>An ad-free home screen for this TV.</description>
+    <content src="index.html"/>
+    <icon src="icon.png"/>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+    <feature name="http://tizen.org/feature/web.service"/>
+    <!-- The background helper (service/index.js) that brings Skylight back when an app closes. -->
+    <tizen:service id="skylightTV.SkylightWatch" on-boot="true" auto-restart="true">
+        <tizen:content src="service/index.js"/>
+        <tizen:name>SkylightWatch</tizen:name>
+        <tizen:description>Brings Skylight back when an app opened from it closes.</tizen:description>
+    </tizen:service>
+    <tizen:profile name="tv-samsung"/>
+    <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/application.info"/>
+    <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+    <!-- Opening Skylight while it is already running brings it straight back instead of reloading. -->
+    <tizen:app-control>
+        <tizen:src name="index.html" reload="disable"/>
+        <tizen:operation name="http://samsung.com/appcontrol/operation/eden_resume"/>
+    </tizen:app-control>
+    <!-- Background support keeps Skylight's script running while another app is on screen, so it
+         can notice that app closing and come back instead of leaving you on Samsung's home. -->
+    <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="enable"
+                   encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

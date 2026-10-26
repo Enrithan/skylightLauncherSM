@@ -1,0 +1,23 @@
+# Built packages and downloaded tools
+dist/
+apps2samsung-cli/
+tizentube/
+*.wgt
+
+# Third-party brand logos are fetched locally by tools/fetch-icons.ps1, not redistributed
+skylight/icons/*.png
+
+# Generated from your own TV and SmartThings account
+tools/skylight-boot-rule.json
+
+# Editor and assistant state
+.claude/
+.vscode/
+.idea/
+
+# Drafts that aren't part of the project
+docs/linkedin-post.md
+
+# OS noise
+Thumbs.db
+.DS_Store

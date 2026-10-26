@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=1920, height=1080, user-scalable=no">
+  <title>Skylight</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="screen" class="screen">
+    <!-- The scenery is drawn once a minute. The only things that move on their own are a few tiny
+         stars, the fireflies, the aurora's slow drift, the water's shimmer, and the odd bird or
+         shooting star. Layers are listed back to front. -->
+    <div id="sky" class="sky" aria-hidden="true">
+      <div class="milkyway"></div>
+      <div class="aurora aurora--one"></div>
+      <div class="aurora aurora--two"></div>
+      <div id="stars" class="stars"></div>
+      <div id="twinkles" class="twinkles"></div>
+      <div class="clouds clouds--wisps"></div>
+      <div class="clouds clouds--puffs"></div>
+      <div id="haze" class="haze"></div>
+      <div id="godrays" class="godrays"></div>
+      <div id="glare" class="glare">
+        <div class="glare-rays"></div>
+        <div class="glare-rays glare-rays--fine"></div>
+        <div class="glare-halo"></div>
+        <div class="glare-ring"></div>
+        <div class="sun"></div>
+        <div class="glare-streak"></div>
+      </div>
+      <div id="moon" class="moon">
+        <div class="moon-glow"></div>
+        <div class="moon-disc"><div id="moonShade" class="moon-shade"></div></div>
+      </div>
+      <div id="birds" class="birds">
+        <svg viewBox="0 0 120 40" width="120" height="40">
+          <path d="M8 18 q5 -6 10 0 q5 -6 10 0"/>
+          <path d="M34 9 q4 -5 8 0 q4 -5 8 0"/>
+          <path d="M52 22 q4.5 -5.5 9 0 q4.5 -5.5 9 0"/>
+          <path d="M78 13 q3.5 -4.5 7 0 q3.5 -4.5 7 0"/>
+          <path d="M96 25 q3 -4 6 0 q3 -4 6 0"/>
+        </svg>
+      </div>
+      <div id="meteor" class="meteor"></div>
+      <div id="lake" class="lake"></div>
+      <!-- The mountains mirrored in the water. -->
+      <svg class="ridges ridges--reflection" viewBox="0 0 1920 160" preserveAspectRatio="none">
+        <use href="#ridgeFar" class="ridge--far"/>
+        <use href="#ridgeMid" class="ridge--mid"/>
+      </svg>
+      <div id="column" class="column"></div>
+      <div id="glitter" class="glitter">
+        <div id="glitterA" class="glitter-layer"></div>
+        <div id="glitterB" class="glitter-layer glitter-layer--alt"></div>
+      </div>
+      <div class="mist"></div>
+      <div class="ripple" style="left: 1610px; top: 600px;"></div>
+      <div class="ripple ripple--two" style="left: 1700px; top: 660px;"></div>
+      <svg class="ridges" viewBox="0 0 1920 160" preserveAspectRatio="none">
+        <path id="ridgeFar" class="ridge ridge--far" d="M0 92C110 74 190 60 280 63C350 65 410 50 470 30C500 20 520 12 540 14C565 16 600 40 650 52C720 68 800 60 880 56C960 52 1020 66 1100 70C1180 74 1250 62 1330 52C1400 42 1460 22 1520 10C1540 6 1555 6 1572 12C1610 26 1660 52 1720 60C1800 70 1870 66 1920 62V160H0Z"/>
+        <path id="ridgeMid" class="ridge ridge--mid" d="M0 108C80 100 150 88 230 90C310 92 360 106 440 104C520 102 590 82 680 80C770 78 830 98 920 100C1010 102 1080 86 1170 84C1260 82 1330 100 1420 102C1510 104 1580 90 1670 88C1760 86 1840 96 1920 98V160H0Z"/>
+        <path class="ridge ridge--near" d="M0 132C50 128 90 122 140 124C190 126 220 134 280 133C350 132 390 120 450 121C510 122 560 134 630 134C700 134 740 126 810 126C880 126 930 136 1000 136C1070 136 1120 124 1190 124C1260 124 1300 135 1370 135C1440 135 1490 123 1560 123C1630 123 1680 133 1750 133C1820 133 1870 128 1920 127V160H0Z"/>
+      </svg>
+      <!-- Pines along both shores, in front of the mountains. -->
+      <svg class="pines" viewBox="0 0 1920 120" preserveAspectRatio="none">
+        <path d="M0 120V70l14-34 6 12 8-26 10 22 6-10 12 36 8-18 10 26 6-12 14 30 10-40 8 16 10-22 12 34 6-8 12 28 8-20 10 24 8-10 12 32 10-38 8 14 10-24 14 36 6-8 10 26 8-16 12 28 6 6V120Z"/>
+        <path d="M1920 120V72l-12-30-6 10-10-28-10 24-6-12-12 36-8-18-10 26-6-12-14 30-10-40-8 16-10-22-12 34-6-8-12 28-8-20-10 24-8-10-12 32-10-38-8 14-10-24-14 36-6-8-10 26-8-16-12 28-6 6V120Z"/>
+      </svg>
+      <div id="fireflies" class="fireflies"></div>
+      <div id="flares" class="flares"></div>
+      <div class="vignette"></div>
+      <div id="grain" class="grain"></div>
+    </div>
+    <div id="glowA" class="glow" aria-hidden="true"></div>
+    <div id="glowB" class="glow" aria-hidden="true"></div>
+
+    <main class="stage">
+      <header class="masthead">
+        <p id="greeting" class="greeting">Good evening</p>
+        <p class="clock"><span id="time">9:41</span><span id="meridiem" class="meridiem">pm</span></p>
+        <p id="date" class="date"></p>
+        <p id="detail" class="detail"></p>
+      </header>
+
+      <section id="favourites" class="row row--big" aria-label="Favourites"></section>
+
+      <div class="caption" aria-live="polite">
+        <h1 id="captionTitle" class="caption-title"></h1>
+        <p id="captionNote" class="caption-note"></p>
+        <p id="hint" class="hint">Hold OK on an app to move or hide it</p>
+      </div>
+
+      <section id="all" class="row row--small" aria-label="All apps"></section>
+
+      <!-- Opens when OK is held on an app. -->
+      <div id="menu" class="menu" role="menu">
+        <p id="menuTitle" class="menu-title"></p>
+        <div class="menu-item" role="menuitem" data-action="move">Move</div>
+        <div class="menu-item" role="menuitem" data-action="hide">Hide</div>
+      </div>
+    </main>
+
+    <div id="curtain" class="curtain" aria-hidden="true"></div>
+    <pre id="diary" class="diary" hidden></pre>
+  </div>
+
+  <script src="js/catalog.js"></script>
+  <script src="js/mock-tizen.js"></script>
+  <script src="js/scenery.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
