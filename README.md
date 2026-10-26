@@ -1,231 +1,334 @@
-<h1 align="center">Skylight</h1>
-
 <p align="center">
-  A fast, ad-free home screen for Samsung Tizen TVs.<br>
-  No root, no Android box, no firmware mods: a sideloaded web app that takes over the Home button,
-  comes back when apps close, and starts with the TV.
+  <img src="docs/images/banner.jpg" alt="Skylight. A home screen for Samsung TVs. No root, no Android box, no ads. A painted lake at golden hour, the sun setting behind the mountains." width="100%">
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2b5cc9"></a>
-  <img alt="Tizen 6 and newer, tested on Tizen 9" src="https://img.shields.io/badge/Tizen-6%2B%20(tested%20on%209)-1428a0">
-  <img alt="No root required" src="https://img.shields.io/badge/root-not%20required-1f8a70">
-  <img alt="Zero dependencies" src="https://img.shields.io/badge/dependencies-none-3a4152">
+  <a href="https://saudsatopay.github.io/skylight-tizen/"><img alt="Live demo" src="https://img.shields.io/badge/live%20demo-open%20in%20your%20browser-ffcf93?labelColor=0b1336"></a>
+  <a href="https://github.com/SaudSatopay/skylight-tizen/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/SaudSatopay/skylight-tizen?label=release&labelColor=0b1336&color=ffcf93"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-ffcf93?labelColor=0b1336"></a>
+  <img alt="Tested on Tizen 9" src="https://img.shields.io/badge/tested%20on-Tizen%209-ffcf93?labelColor=0b1336">
+  <img alt="No root needed" src="https://img.shields.io/badge/root-not%20needed-ffcf93?labelColor=0b1336">
 </p>
+
+**Skylight replaces what you see when you turn on a Samsung TV.** Your apps as tiles, under a sky that
+follows the hour, and nothing sponsored. It is a sideloaded Tizen web app: no root, no Android box, nothing
+removed from the TV. Three small loops keep it in place on a system that was never meant to allow a
+third-party home screen: it comes back when an app closes, it answers the Home button, and it starts with
+the TV.
 
 <p align="center">
-  <img src="docs/screenshots/golden-hour.jpg" alt="Skylight at golden hour: a painted sky over a lake, with the apps as logo tiles" width="100%">
+  <img src="docs/images/a-day-on-skylight.webp" alt="A whole day on Skylight in nine seconds: the sky over the lake moves from before dawn through sunrise, noon, golden hour, dusk and an aurora night, while the clock on the home screen moves forward" width="100%">
+  <br><sub>A whole day in nine seconds, drawn by the same code the TV runs.</sub>
 </p>
 
-## Why
+## Why this exists
 
-Samsung's home screen on a new TV is a billboard: sponsored rows, a channel app that autoruns at power-on,
-"recommendations", and a launcher that takes its time. The usual answer is to plug in an Android box and
-re-skin that. Skylight takes the other road: it keeps the TV exactly as it is and replaces only what you look
-at. Your apps, your order, a sky that follows the time of day, nothing else.
+In October 2026 [Clean Your TV](https://github.com/Gathin23/cleanyourtv) went viral: 38,000 GitHub stars in
+nine days, and a showcase of more than a hundred projects built around it. It works because Android TVs
+have ADB. Turn on debugging, switch the manufacturer's bloat off with `pm disable-user`, install a clean
+launcher and make it Home.
 
-It was built for a 2025 Crystal UHD (UA43UE86AFULXL, Tizen 9) over one long day of trying things on the real
-hardware. Everything below is what survived.
+Samsung TVs run Tizen, and none of that exists there. Clean Your TV's own
+[notes on Tizen](https://github.com/Gathin23/cleanyourtv/blob/main/docs/devices/samsung-tizen.md) put it
+plainly: there is no shell to switch Samsung's apps off, and a custom app tested on a 2024 Samsung still lost
+the Home button to Samsung Home and came back on HDMI after a restart.
 
-<table>
-  <tr>
-    <td><img src="docs/screenshots/dawn.jpg" alt="Dawn: the sun rising behind the mountains, mist on the lake"></td>
-    <td><img src="docs/screenshots/day.jpg" alt="Day: clear blue sky, the bottom row selected"></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/night.jpg" alt="Night: full moon, aurora, fireflies on the shore"></td>
-    <td><img src="docs/screenshots/move-or-hide.jpg" alt="Holding OK on a tile opens a Move / Hide menu"></td>
-  </tr>
-</table>
+Skylight takes a different route. It leaves Samsung's software where it is, puts a better home screen in
+front of it, and then does the work Tizen won't do for it: noticing when it has lost the screen, and taking
+it back.
+
+| | Android TV with Clean Your TV | Samsung TV as it ships | Samsung TV with Skylight |
+|---|---|---|---|
+| Sponsored rows on the home screen | Switched off over ADB | Always there | Out of sight: Skylight is the home you see |
+| Your own home screen | Replaces the launcher | Not possible | A sideloaded app that holds its place |
+| Press Home | The new launcher | Samsung Home | Skylight, a moment later |
+| Leave an app | The new launcher | Samsung Home | Skylight |
+| Turn the TV on | The new launcher | Samsung Home or the last source | Skylight (about 90 s after a cold boot) |
+| What it changes on the TV | Disables apps, restorably | Nothing | Nothing |
 
 ## What it does
 
-- **Shows your apps as logo tiles**, two rows: favourites on top, everything else below. Hold **OK** on a
-  tile to move it (left/right, or up/down between rows) or hide it. Apps installed later appear by themselves;
-  Samsung's system apps don't.
-- **Comes back when an app closes.** Exit Netflix, YouTube or anything else and you land on Skylight, not on
-  Samsung's home. This works even for apps the TV keeps resident, such as YouTube.
-- **Takes over the Home button.** Press Home anywhere and Skylight returns a moment later. A "Samsung" tile
-  gives you Samsung's own screen back for three minutes whenever you need the app store.
-- **Starts with the TV**, both from standby and from a cold boot, through two small SmartThings cloud rules
-  (the TV refuses to start sideloaded apps itself; see [how it works](#how-it-works)).
-- **Paints the sky for the hour**: dawn, day, golden hour, dusk and night blend into each other, with the sun
-  and its glare, the moon in its real phase, stars, aurora, mist, pines and a lake that mirrors it all. The
-  line under the date tells you the moon phase and the next sunrise or sunset.
-- **Stays fast on TV hardware.** On the TV the scenery is painted once a minute into a single flat image;
-  only a handful of tiny things animate. The full version with drifting clouds, breathing light and gliding
-  sun runs in the desktop preview. No frameworks, no network calls, fonts bundled.
-- **Ad-free YouTube** by pairing with [TizenTube](https://github.com/reisxd/TizenTube), which Skylight
-  shows as "YouTube" and returns from cleanly.
+- **Your apps as tiles.** Favourites on top, the rest below. Hold **OK** on a tile to move it or hide it.
+  New apps show up by themselves; Samsung's system apps don't.
+- **Comes back when an app closes.** Exit Netflix, YouTube or anything else and you land on Skylight, even
+  with apps the TV keeps running in the background.
+- **Answers the Home button.** Press Home anywhere and Skylight is back a moment later. A Samsung tile hands
+  you Samsung's own screen for three minutes when you need the app store.
+- **Starts with the TV**, from standby and from a cold boot, through two small SmartThings cloud rules.
+- **A sky that keeps the time.** Dawn, day, golden hour, dusk and night blend into each other, the sun and
+  moon cross the sky, the moon shows its real phase, and the line under the date gives the next sunrise or
+  sunset.
+- **Fast on TV hardware.** On the TV the scenery is painted once a minute into one flat image, and only a few
+  tiny things move. No frameworks, no network calls, fonts bundled: the whole app is about half a megabyte.
+- **Ad-free YouTube** with [TizenTube](https://github.com/reisxd/TizenTube), which Skylight shows as YouTube
+  and returns from cleanly.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/dawn.jpg" alt="Dawn: the sun just over the mountains, mist on the lake"></td>
+    <td width="50%"><img src="docs/screenshots/day.jpg" alt="Late morning: a blue sky, the bottom row selected"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/night.jpg" alt="Night: a full moon and the aurora, Netflix selected"></td>
+    <td><img src="docs/screenshots/move-or-hide.jpg" alt="Holding OK on Netflix opens a small menu: Move, Hide"></td>
+  </tr>
+</table>
+
+## Try it in your browser
+
+The [live demo](https://saudsatopay.github.io/skylight-tizen/) is the real app, with a stand-in for the TV.
+Use the arrow keys and Enter, and hold Enter on a tile for Move and Hide. Jump to
+[dawn](https://saudsatopay.github.io/skylight-tizen/?hour=6.6),
+[noon](https://saudsatopay.github.io/skylight-tizen/?hour=12.5),
+[golden hour](https://saudsatopay.github.io/skylight-tizen/?hour=17.1),
+[dusk](https://saudsatopay.github.io/skylight-tizen/?hour=19.4) or
+[night](https://saudsatopay.github.io/skylight-tizen/?hour=22.4).
+App logos are not part of this repository, so the demo shows lettered tiles in their place.
 
 ## How it works
 
-Samsung's platform forbids most of what a launcher needs, so Skylight is three parts that each cover one
-thing the others can't.
+<p align="center">
+  <img src="docs/images/how-it-works.jpg" alt="Three timelines. When an app closes: you open Netflix from Skylight, a helper service asks the TV once a second what is on screen, Netflix leaves the screen, Skylight comes back. When you press Home: Samsung's home takes the screen, Skylight notices it was hidden without opening anything, a second and a half later nothing of yours is showing, Skylight comes back. When the TV starts: it reports in to SmartThings, a cloud rule runs launchApp, Skylight opens." width="100%">
+</p>
+
+Samsung's platform forbids most of what a launcher needs, so Skylight is three parts, each covering
+something the others can't.
+
+**The app** (`skylight/`) is a plain Tizen web app: one HTML page, hand-written CSS and JavaScript, no build
+step beyond zipping. It opens apps with `tizen.application.launch` and keeps running in the background.
+When it loses the screen without having opened anything, that was the Home button: it waits a second and a
+half, checks that no app of yours took over, and brings itself back with Samsung's own `eden_resume` app
+control, so it returns instantly instead of reloading.
+
+**The helper** (`skylight/service/index.js`) is a Tizen web service: Node.js, started by the app, living on
+as its own process so it keeps watching even while the TV freezes the page under a heavy app. It asks the
+TV's own status service whether the app you opened is still on screen:
 
 ```
- ┌──────────────────────────┐   launches apps     ┌──────────────────────────────┐
- │  Skylight (web app)      │ ───────────────────▶│  Netflix, TizenTube, ...     │
- │  the screen you see      │                     └──────────────────────────────┘
- │  - notices when it loses │                                    │ "is it still on screen?"
- │    the screen (Home)     │                                    ▼
- │  - asks the helper to    │   app control       ┌──────────────────────────────┐
- │    watch the app         │ ───────────────────▶│  SkylightWatch (Node service)│
- └──────────────────────────┘                     │  runs as its own process     │
-              ▲                                   │  polls the TV's local status │
-              │ launchApp                         │  endpoint once a second and  │
- ┌──────────────────────────┐                     │  re-opens Skylight           │
- │  SmartThings cloud rules │                     └──────────────────────────────┘
- │  "TV turned on"          │                                    │
- │  "TV checked in"         │        GET http://127.0.0.1:8001/api/v2/applications/<id>
- └──────────────────────────┘                     → { running, visible }  (answers only from the TV itself)
+GET http://127.0.0.1:8001/api/v2/applications/<app id>
+{ "running": true, "visible": false }
 ```
 
-1. **The app** (`skylight/`) is a plain Tizen web app: one HTML page, hand-written CSS, no build step beyond
-   zipping. It launches apps with `tizen.application.launch`, keeps running in the background
-   (`background-support`), and when it loses the screen without having launched anything (the Home button),
-   waits 1.5 s, checks that no app of yours took over, and brings itself back.
-2. **The helper** (`skylight/service/index.js`) is a Tizen *web service*: Node.js, started by the app, living
-   on as its own process so it keeps watching even when the TV freezes the page under a heavy app. It asks the
-   TV's own status service (`127.0.0.1:8001`, which answers without a token only to callers on the TV)
-   whether the app you opened is still on screen, and re-opens Skylight when it isn't. Exiting YouTube, for
-   instance, never "closes" it, it just leaves the screen, so *leaving the screen* is the signal. The helper
-   also serves its log on `127.0.0.1:8130`, which the diagnostics panel (select a top-row tile and press
-   **Up** three times) shows.
-3. **Startup** can't come from the TV: it ignores `on-boot` for sideloaded services and has no
-   "autorun last app" on this model. It can come from Samsung's cloud, though. The TV exposes `launchApp`
-   and `remoteControl.send` to the SmartThings *API* (the SmartThings app's routine editor hides them), and
-   SmartThings Rules run server-side with no always-on device. `tools/smartthings-skylight.ps1` creates two
-   rules: one fires when the TV reports *on* (standby wake), the other when the TV *checks in* after a cold
-   boot, which never produces an on/off event but does refresh a status timestamp. The full investigation,
-   with every dead end, is in [docs/startup-investigation.md](docs/startup-investigation.md).
+That service answers without a token only to callers on the TV itself. Exiting YouTube, for instance, never
+closes it, it only leaves the screen, so *leaving the screen* is the signal, and Skylight comes back. The
+helper also serves its log on `127.0.0.1:8130`, which the diagnostics panel shows (select a top-row tile and
+press **Up** three times).
 
-Things that do **not** work on these TVs, so you don't have to re-try them: capturing the Home key,
-registering as a source, `on-boot` services, prelaunch, the casting (DIAL) service from the TV itself
-(401 to local callers), launching sub-apps in the caller's app group for YouTube, and `tizen.application
-.getAppsContext()` as a "closed" signal for resident apps.
+**The cloud rules** (`tools/smartthings-skylight.ps1`) handle startup, which nothing on the TV can do: it
+ignores `on-boot` for sideloaded services, and this model has no "autorun last app". Samsung TVs expose
+`launchApp` and `remoteControl.send` to the SmartThings API (the SmartThings phone app's routine editor
+hides them), and SmartThings Rules run on Samsung's servers with no device of yours left on. One rule fires
+when the TV reports it has woken from standby. A cold boot sends no power event at all, but the TV does
+refresh a status timestamp when it checks in, and the second rule listens for that.
 
-## Requirements
+<details>
+<summary><b>What does not work on these TVs</b>, so you don't have to try it</summary>
+<br>
 
-- A Samsung TV on Tizen 6 or newer (2021+; tested on Tizen 9, 2025). Developer Mode must be on.
-- A PC on the same network. The scripts here are PowerShell (Windows); the TV tooling they drive,
-  [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung), also runs on macOS and Linux.
-- A Samsung account: Tizen 7+ installs need a certificate tied to your TV, which Apps2Samsung creates for
-  you. Skylight's helper needs the *Partner* level, so install with `--partner`.
-- For startup: the TV added to SmartThings, and a SmartThings personal access token (used once, to create
-  the rules; they live on without it).
+| Idea | What happens |
+|---|---|
+| Catching the Home key | Samsung keeps it; no app receives it. |
+| Registering as a source or replacing the home app id | Not available to third-party apps. |
+| `on-boot="true"` services | Ignored for sideloaded apps; nothing runs until something launches it. |
+| `prelaunch.support` | Not supported since 2019 TVs. |
+| `getAppsContext()` as an "app closed" signal | Resident apps such as YouTube stay in the list after you exit them. |
+| The casting (DIAL) service from the TV itself | Answers 401 to callers on the TV. |
+| Launching YouTube in the caller's app group | It hands over to Samsung's resident YouTube engine instead. |
+| The SmartThings phone app's routines | They don't offer "open app"; the API does. |
+
+The full investigation, dead ends included, is in [docs/startup-investigation.md](docs/startup-investigation.md).
+</details>
 
 ## Install
 
-**1. Developer Mode on the TV.** Open the Apps screen, type `1 2 3 4 5` on the remote (on remotes without
-number keys, the SmartThings phone remote's keypad works), switch Developer Mode on, enter your PC's IP as
-the Host PC IP, then unplug the TV for a full minute and plug it back in. (On 2025 models a normal restart
-isn't enough.)
+**You need** a Samsung TV with Developer Mode (tested on a 2025 model with Tizen 9; see
+[compatibility](#compatibility)), a Windows PC on the same network for the PowerShell scripts, and a Samsung
+account. The startup rules also need the TV added to SmartThings.
 
-**2. Apps2Samsung CLI.** Download `Apps2Samsung-cli-<version>-win-x64.zip` from
-[Apps2Samsung releases](https://github.com/Apps2Samsung/Apps2Samsung/releases), unzip, and check it sees
-your TV:
+**1. Developer Mode on the TV.** Open the Apps screen and type `1 2 3 4 5` on the remote. On remotes without
+number keys, the SmartThings phone app's remote has a keypad. Switch Developer Mode on, enter your PC's IP
+address as the Host PC IP, then unplug the TV for a full minute and plug it back in. On 2025 models a normal
+restart isn't enough.
+
+**2. The installer.** Download `Apps2Samsung-cli-<version>-win-x64.zip` from the
+[Apps2Samsung releases](https://github.com/Apps2Samsung/Apps2Samsung/releases), unzip it, and check that it
+finds the TV:
 
 ```powershell
 apps2samsung-cli scan
 ```
 
-**3. Logos and package.** The app logos aren't redistributed; fetch them, then build:
+**3. The app.** Download `Skylight.wgt` from the [latest release](https://github.com/SaudSatopay/skylight-tizen/releases/latest),
+or build it yourself with the app logos, which aren't redistributed here:
 
 ```powershell
-tools\fetch-icons.ps1
-tools\build-skylight.ps1          # writes dist\Skylight.wgt
+tools\fetch-icons.ps1        # downloads the logos into skylight\icons
+tools\build-skylight.ps1     # writes dist\Skylight.wgt
 ```
 
-**4. Install on the TV.** The first run signs you into Samsung in a browser to create the certificate.
+**4. Install it.** The first install opens a browser so you can sign in to Samsung, which creates a signing
+certificate for your TV. Later installs reuse it.
 
 ```powershell
 apps2samsung-cli install dist\Skylight.wgt --tv <TV IP> --partner --launch
 ```
 
-Install TizenTube the same way if you want ad-free YouTube:
-`apps2samsung-cli install TizenTube --file TizenTubeCobalt.wgt --tv <TV IP> --partner`.
+Add `--local-ip <PC IP>` if the PC has more than one network. For ad-free YouTube, install TizenTube from the
+installer's catalog the same way: `apps2samsung-cli install TizenTube --tv <TV IP>`.
 
-**5. TV settings.** Settings → All Settings → Advanced Features → Start Screen Options: *Start with Smart Hub
-Home* **on** (the TV then waits on Samsung's home instead of a "no signal" screen while startup runs),
-*Autorun Samsung TV Plus* **off**. If you never watch TV Plus, remove it too: Home → Edit List → Samsung TV
-Plus → Remove → Disable.
+**5. TV settings.** Settings, All Settings, Advanced Features, Start Screen Options: turn *Start with Smart
+Hub Home* **on**, so a cold boot waits on Samsung's home rather than a "no signal" screen while startup runs,
+and turn *Autorun Samsung TV Plus* **off**.
 
-**6. Startup from the cloud.** Create a token at <https://account.smartthings.com/tokens> with scopes
-*Devices read + execute, Locations read, Rules read + write + execute* (new tokens expire in 24 h; fine),
-then:
+**6. Startup.** Create a token at <https://account.smartthings.com/tokens> with *Devices: read, execute*,
+*Locations: read* and *Rules: read, write, execute*. New tokens expire after 24 hours, which is fine: the
+rules keep running without it.
 
 ```powershell
 $env:SMARTTHINGS_TOKEN = '<token>'
-tools\smartthings-skylight.ps1              # finds the TV, confirms it accepts app launches
-tools\smartthings-skylight.ps1 -Test        # opens Skylight on the TV through the cloud
-tools\smartthings-skylight.ps1 -CreateRule  # standby wake  -> Skylight
-tools\smartthings-skylight.ps1 -ReportRule -BootDelay 5 -NoHomeKey   # cold boot -> Skylight
+tools\smartthings-skylight.ps1                                      # finds the TV, checks it accepts app launches
+tools\smartthings-skylight.ps1 -Test                                # opens Skylight on the TV through the cloud
+tools\smartthings-skylight.ps1 -CreateRule                          # standby wake: Skylight
+tools\smartthings-skylight.ps1 -ReportRule -BootDelay 5 -NoHomeKey  # cold boot: Skylight
 ```
 
-`-ListRules`, `-DeleteRule poweron|checkin`, `-Status`, `-History`, `-Execute checkin` and
-`-Capability <name>` are there for inspection. If your TV starts on a tuner "no signal" screen instead of
-Samsung's home, drop `-NoHomeKey`: the rule will press Home for you before launching.
+If your TV starts on a tuner "no signal" screen instead of Samsung's home, leave out `-NoHomeKey` and the rule
+presses Home before launching. `-ListRules`, `-DeleteRule poweron` or `-DeleteRule checkin`, `-Status`,
+`-History`, `-Execute checkin` and `-Capability <name>` are there for looking around.
 
 ## Everyday use
 
 | Do this | Get this |
 |---|---|
-| Arrows, OK | Move around, open an app |
-| Hold OK on a tile | Move it (arrows, then OK) or hide it |
-| Hidden apps tile (end of the bottom row) | Bring hidden apps back |
-| Samsung tile, then Home | Samsung's own screen for three minutes (app store, etc.) |
+| Arrows, then OK | Move around, open an app |
+| Hold OK on a tile | Move it with the arrows, or hide it |
+| The Hidden apps tile, at the end of the bottom row | Bring hidden apps back |
+| The Samsung tile, then Home | Samsung's own screen for three minutes, for the app store |
 | Home, from anywhere | Skylight |
 | Back out of any app | Skylight |
-| Top-row tile, then Up × 3 | Diagnostics: what Skylight and its helper noticed |
+| A top-row tile, then Up three times | Diagnostics: what Skylight and its helper noticed |
 
 ## Make it yours
 
-Everything that is opinionated lives in two files.
+Everything opinionated lives in two files.
 
-- `skylight/js/catalog.js`: which apps are favourites, the order of the rest, apps to hide, and per-app
-  name, logo, colour and the short note shown when selected. Unknown store apps show up automatically with
-  a generated colour; Samsung system apps are skipped unless listed.
-- `skylight/js/scenery.js`: the five palettes (`SKIES`), the blend time between them, sunrise and sunset
-  (`SUNRISE`/`SUNSET`, in hours), and the moon-phase names. Dropping new logos into `skylight/icons/` and
-  naming them in the catalog is all a new app needs.
+- **`skylight/js/catalog.js`** decides which apps are favourites, the order of the rest, which apps stay
+  hidden, and each app's name, logo, colour and the note shown when it is selected. Store apps that aren't
+  listed still appear, with a colour of their own; Samsung's system apps are skipped unless listed.
+- **`skylight/js/scenery.js`** holds the five skies (`SKIES`), how long they take to blend, and sunrise and
+  sunset (`SUNRISE`, `SUNSET`, in hours).
 
-To preview on a PC, serve the `skylight` folder with any static server and open it in a browser; a stub
-stands in for the TV's `tizen` API. Handy query flags: `?hour=22.4` (any time of day), `?lean` (the TV
-rendering), `?still` (no transitions, for screenshots), `?visitors` (birds and shooting stars right away),
-`?keys=39,39,13` (replay remote keys).
+To preview on a PC, serve the `skylight` folder with any static server and open it in a browser; a stand-in
+replaces the TV's `tizen` API. Handy flags: `?hour=22.4` for any time of day, `?lean` for the TV's rendering,
+`?still` for screenshots, `?visitors` for birds and shooting stars right away, and `?keys=39,39,13` to replay
+remote keys.
+
+## Compatibility
+
+| TV | Year | Tizen | Result |
+|---|---|---|---|
+| Samsung Crystal UHD UA43UE86AFULXL | 2025 | 9.0 | Everything works. A cold boot reaches Skylight after about 90 seconds. |
+
+Tried it on another Samsung? [Tell us how it went](https://github.com/SaudSatopay/skylight-tizen/issues/new?template=compatibility.yml),
+good or bad. This table grows from those reports.
+
+## Questions
+
+<details>
+<summary><b>Does it change anything on the TV's system?</b></summary>
+<br>
+No. It is an ordinary app installed through Samsung's own Developer Mode, the way developers test their apps.
+Nothing is rooted, flashed, patched or disabled. Uninstall it from the Apps screen and the TV is exactly as it
+was. The startup rules live in your SmartThings account; <code>-DeleteRule poweron</code> and
+<code>-DeleteRule checkin</code> remove them.
+</details>
+
+<details>
+<summary><b>Are Samsung's ads gone?</b></summary>
+<br>
+From the screen you see, yes. Samsung's home still exists underneath, and you'll see it for a moment after
+pressing Home, or whenever you open it on purpose through the Samsung tile. Turning off <i>Autorun Samsung TV
+Plus</i> and the ad and viewing-information options under Settings, Privacy Choices removes most of the rest.
+</details>
+
+<details>
+<summary><b>Does my PC have to stay on?</b></summary>
+<br>
+No. The PC is only for installing. The helper runs on the TV, and the startup rules run in Samsung's cloud.
+</details>
+
+<details>
+<summary><b>Why does a cold boot take about 90 seconds?</b></summary>
+<br>
+After the power has been off, the TV needs about that long to get back online and report in to SmartThings,
+and nothing on the TV may start a sideloaded app before then. Waking from standby is much quicker. If you
+always turn the TV off with the remote, you rarely see a cold boot at all.
+</details>
+
+<details>
+<summary><b>What happens after a firmware update?</b></summary>
+<br>
+Installed apps stay. If Samsung ever changes the TV's local status service, returning from apps could stop
+working; the diagnostics panel will show it, and an issue here will get it looked at.
+</details>
+
+<details>
+<summary><b>Why not just buy an Android TV box?</b></summary>
+<br>
+You can, and Clean Your TV is excellent there. Skylight is for keeping the TV you already have, with its own
+remote, picture settings and apps, and making it calm.
+</details>
+
+<details>
+<summary><b>Does it collect anything?</b></summary>
+<br>
+No. No analytics, no accounts, no network calls. The helper talks only to the TV itself on 127.0.0.1, and the
+startup rules sit in your own SmartThings account.
+</details>
+
+<details>
+<summary><b>Does it work on Android TV or LG?</b></summary>
+<br>
+No, Skylight is for Samsung's Tizen. For Android TV and Google TV, use
+<a href="https://github.com/Gathin23/cleanyourtv">Clean Your TV</a> or its
+<a href="https://github.com/udhaykumarbala/cleanyourtv-app">phone app</a>; its showcase also lists projects
+for Fire TV and LG webOS.
+</details>
 
 ## Performance notes
 
-The TV's graphics chip is the limit, not the code. What proved expensive: many large translucent layers
-composited every frame (CSS masks, `box-reflect`, drifting full-screen gradients, gliding transforms). What
-proved free: anything drawn once and left alone, plus a few tiny transform/opacity animations. Skylight
-switches to "lean" mode on the TV (class `lean` on `#screen`) and keeps the rich version for the preview;
-if you add effects, gate heavy ones behind `.screen:not(.lean)`.
+The TV's graphics chip is the limit, not the code. What proved expensive on a budget chip: many large
+translucent layers blended every frame, such as CSS masks, `-webkit-box-reflect`, drifting full-screen
+gradients and gliding transforms. What proved free: anything drawn once and left alone, plus a few small
+transform and opacity animations. Skylight switches to a lean rendering on the TV (the class `lean` on
+`#screen`) and keeps the richer one for the browser. If you add an effect, keep it small, or keep it behind
+`.screen:not(.lean)`.
 
 ## Known limits
 
-- A cold boot shows Samsung's home (or the tuner) for roughly 90 seconds before Skylight appears. That is
-  how long the TV takes to reach Samsung's cloud; nothing can run on the TV before then.
-- The cold-boot rule relies on Skylight having been the last app on screen when power was lost. After a cut
-  while another app was showing, one press of Home brings Skylight.
-- A Samsung firmware update could change the local status endpoint the helper relies on. The diagnostics
-  panel will show it.
-- Sideloaded apps need Developer Mode to stay on. Keep the Host PC IP pointing at a machine that exists.
+- A cold boot shows Samsung's home for about 90 seconds before Skylight appears (see above).
+- The cold-boot rule relies on Skylight having been the last app on screen when the power went. After a cut
+  while another app was showing, one press of Home brings Skylight back.
+- Sideloaded apps need Developer Mode to stay on, with the Host PC IP pointing at a machine that exists.
+
+## Contributing
+
+Reports from other TVs are the most useful thing right now; there's a form for them. Code is welcome too:
+see [CONTRIBUTING.md](CONTRIBUTING.md) for how to preview, what to keep in mind for TV hardware, and how to
+test on a set.
 
 ## Credits
 
+- [Clean Your TV](https://github.com/Gathin23/cleanyourtv) by Gathin, for starting the wave, and for writing
+  down honestly what does and doesn't work on Tizen.
 - [TizenTube](https://github.com/reisxd/TizenTube) and [TizenBrew](https://github.com/reisxd/TizenBrew) by
-  reisxd, for ad-free YouTube and for showing that Samsung's `eden_resume` app control resumes an app without
-  reloading it.
-- [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung), for making installs and certificates a
-  one-liner.
+  reisxd, for ad-free YouTube on Tizen.
+- [Apps2Samsung](https://github.com/Apps2Samsung/Apps2Samsung), which turns installs and certificates into
+  one command.
 - Fonts: [Fraunces](https://github.com/undercasetype/Fraunces) by Undercase Type and
   [Atkinson Hyperlegible Next](https://github.com/googlefonts/atkinson-hyperlegible-next) by the Braille
   Institute, both under the SIL Open Font License.
-- SmartThings' [Rules API](https://developer.smartthings.com/docs/automations/rules/), the one documented
-  way to wake a sideloaded app on a cold boot.
 
 ## License
 
-MIT, see [LICENSE](LICENSE). The bundled fonts keep their own licenses, and the app logos are their owners'.
+MIT, see [LICENSE](LICENSE). The bundled fonts keep their own licenses, and app logos belong to their owners.

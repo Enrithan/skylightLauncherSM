@@ -716,6 +716,9 @@
   }
 
   function helperGet(path, done) {
+    // The desktop preview and the live demo have no helper, and a web page asking for 127.0.0.1
+    // makes the browser ask for local-network access, so they skip it.
+    if (window.SKYLIGHT_PREVIEW) { setTimeout(function () { done(null); }, 0); return; }
     var finished = false;
     function finish(text) { if (!finished) { finished = true; done(text); } }
     try {
@@ -877,6 +880,7 @@
   // The TV's own status for one app, from its local status service (which answers only to
   // callers on the TV itself): { running, visible }, or null if it won't say.
   function apiState(id, done) {
+    if (window.SKYLIGHT_PREVIEW) { setTimeout(function () { done(null); }, 0); return; }
     var finished = false;
     function finish(state) { if (!finished) { finished = true; done(state); } }
     try {
@@ -946,10 +950,13 @@
 
   // ---- Lifecycle -----------------------------------------------------------------------------
 
-  // The layout is fixed at 1920x1080; shrink it to fit when previewed in a smaller window.
+  // The layout is fixed at 1920x1080; shrink it to fit, centred, when previewed in a smaller window.
   function fit() {
     var scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
-    screen.style.transform = Math.abs(scale - 1) < 0.001 ? '' : 'scale(' + scale + ')';
+    if (Math.abs(scale - 1) < 0.001) { screen.style.transform = ''; return; }
+    var x = Math.round((window.innerWidth - 1920 * scale) / 2);
+    var y = Math.round((window.innerHeight - 1080 * scale) / 2);
+    screen.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + scale + ')';
   }
 
   // The entrance plays once, when the screen is first actually seen (the TV may start the app

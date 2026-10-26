@@ -1,0 +1,29 @@
+name: Something isn't working
+description: Skylight did something unexpected on your TV.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: TV model and Tizen version
+      placeholder: UA43UE86AFULXL, Tizen 9.0
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Skylight version
+      description: The version in config.xml, or the release you installed.
+      placeholder: 1.17.0
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: A photo or the text of the diagnostics panel (select a top-row tile and press Up three times) right after it happens.

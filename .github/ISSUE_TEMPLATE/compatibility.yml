@@ -1,0 +1,45 @@
+name: Compatibility report
+description: How Skylight runs on your Samsung TV, good or bad.
+title: "[TV] "
+labels: [compatibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Every report helps the next person with the same TV.
+        The model number is on a sticker on the back, or under Settings, Support, About This TV.
+  - type: input
+    id: model
+    attributes:
+      label: TV model
+      placeholder: UA43UE86AFULXL
+    validations:
+      required: true
+  - type: input
+    id: year
+    attributes:
+      label: Model year
+      placeholder: "2025"
+  - type: input
+    id: tizen
+    attributes:
+      label: Tizen version or firmware
+      description: Shown by `apps2samsung-cli tv <ip>`, or under About This TV.
+      placeholder: Tizen 9.0, T-KSU2EFUABC-0090
+  - type: checkboxes
+    id: works
+    attributes:
+      label: What worked
+      options:
+        - label: Skylight installed and opened
+        - label: Apps open from Skylight
+        - label: Exiting an app returns to Skylight
+        - label: Pressing Home returns to Skylight
+        - label: Skylight starts after standby (SmartThings rule)
+        - label: Skylight starts after a cold boot (SmartThings rule)
+        - label: Moving between tiles feels smooth
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: What didn't work, what you did differently, and if you can, a photo of the diagnostics panel (select a top-row tile and press Up three times).

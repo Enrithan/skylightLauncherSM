@@ -85,6 +85,54 @@
     }, 50);
   }
 
+  // The TV needs the page laid out at 1920 pixels; a phone browser would then shrink everything,
+  // this bar included, to a fifth. In a browser the page fits itself to the window instead.
+  var viewport = document.querySelector('meta[name="viewport"]');
+  if (viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1');
+
+  //   (no ?still)   shows the demo bar: the keys to use, and the sky at other times of day
+  if (!/[?&]still\b/.test(location.search)) {
+    var times = [['Dawn', '6.6'], ['Noon', '12.5'], ['Golden hour', '17.1'], ['Dusk', '19.4'], ['Night', '22.4'], ['Now', '']];
+    var current = hour ? hour[1] : '';
+    var bar = document.createElement('nav');
+    bar.className = 'demo-bar';
+    bar.setAttribute('aria-label', 'Demo controls');
+    var tip = document.createElement('span');
+    tip.className = 'demo-tip';
+    tip.textContent = 'Arrow keys move, Enter opens, hold Enter to move or hide.';
+    bar.appendChild(tip);
+    times.forEach(function (t) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = t[0];
+      button.setAttribute('aria-pressed', String(t[1] === current));
+      button.addEventListener('click', function () {
+        var params = new URLSearchParams(location.search);
+        if (t[1]) params.set('hour', t[1]); else params.delete('hour');
+        var query = params.toString();
+        location.search = query ? '?' + query : '';
+      });
+      bar.appendChild(button);
+    });
+    // Keys pressed on the bar are for the bar, not for the home screen behind it.
+    bar.addEventListener('keydown', function (e) { e.stopPropagation(); });
+    var barStyle = document.createElement('style');
+    barStyle.textContent =
+      '.demo-bar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10; width: max-content;' +
+      ' display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px;' +
+      ' max-width: calc(100% - 24px); padding: 5px 6px 5px 16px; border-radius: 22px;' +
+      ' font: 500 14px/1.2 Atkinson, sans-serif; color: rgba(244, 238, 228, 0.82);' +
+      ' background: rgba(3, 5, 26, 0.74); border: 1px solid rgba(255, 255, 255, 0.14); }' +
+      '.demo-tip { margin-right: 10px; }' +
+      '.demo-bar button { font: inherit; color: inherit; background: none; border: 0; border-radius: 16px; padding: 6px 11px; cursor: pointer; }' +
+      '.demo-bar button:hover { background: rgba(255, 255, 255, 0.09); }' +
+      '.demo-bar button[aria-pressed="true"] { background: rgba(255, 207, 147, 0.2); color: #ffe6c4; }' +
+      '.demo-bar button:focus-visible { outline: 2px solid #ffcf93; outline-offset: 1px; }' +
+      '@media (max-width: 720px) { .demo-tip { display: none; } .demo-bar { padding-left: 6px; } }';
+    document.head.appendChild(barStyle);
+    document.body.appendChild(bar);
+  }
+
   window.tizen = {
     ApplicationControl: function (operation, uri, mime, category, data, launchMode) {
       this.operation = operation;

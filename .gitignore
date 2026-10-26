@@ -15,8 +15,8 @@ tools/skylight-boot-rule.json
 .vscode/
 .idea/
 
-# Drafts that aren't part of the project
-docs/linkedin-post.md
+# Launch material (posts, carousel, renders) that isn't part of the project
+launch/
 
 # OS noise
 Thumbs.db
