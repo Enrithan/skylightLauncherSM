@@ -128,7 +128,8 @@ refresh a status timestamp when it checks in, and the second rule listens for th
 | Idea | What happens |
 |---|---|
 | Catching the Home key | Samsung keeps it; no app receives it. |
-| Registering as a source or replacing the home app id | Not available to third-party apps. |
+| Registering as a source | Not available to third-party apps. |
+| Replacing the home app id | Possible on some sets by rewriting system settings over the developer connection, as [CleanFrame](https://github.com/nthnclrk/CleanFrame) does. Skylight leaves it alone: it is undocumented, differs by model and firmware, and changes the TV itself. |
 | `on-boot="true"` services | Ignored for sideloaded apps; nothing runs until something launches it. |
 | `prelaunch.support` | Not supported since 2019 TVs. |
 | `getAppsContext()` as an "app closed" signal | Resident apps such as YouTube stay in the list after you exit them. |
