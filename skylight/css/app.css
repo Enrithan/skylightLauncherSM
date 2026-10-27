@@ -74,7 +74,10 @@ body {
 /* Its own layer, so moving tiles and text never make the TV repaint the landscape. */
 .sky {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   overflow: hidden;
   will-change: transform;
   background: linear-gradient(180deg,
@@ -109,7 +112,7 @@ body {
   opacity: var(--stars);
 }
 
-.twinkles { position: absolute; inset: 0; opacity: var(--stars); }
+.twinkles { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: var(--stars); }
 .twinkles i {
   position: absolute;
   width: 3px;
@@ -304,7 +307,10 @@ body {
 
 .moon-shade {
   position: absolute;
-  inset: -1px;
+  top: -1px;
+  right: -1px;
+  bottom: -1px;
+  left: -1px;
   border-radius: 50%;
   background: var(--sky-mid);
   opacity: 0.93;
@@ -365,7 +371,7 @@ body {
   mask-image: radial-gradient(ellipse 50% 100% at 50% 0%, #000 0%, rgba(0, 0, 0, 0.55) 34%, transparent 76%);
 }
 .glitter.is-on { opacity: 1; }
-.glitter-layer { position: absolute; inset: 0; animation: sway 9s ease-in-out infinite alternate; }
+.glitter-layer { position: absolute; top: 0; right: 0; bottom: 0; left: 0; animation: sway 9s ease-in-out infinite alternate; }
 .glitter-layer--alt { animation: shimmer 2.8s ease-in-out infinite alternate; }
 
 /* Ripples spreading on the open water, now and then. */
@@ -408,14 +414,17 @@ body {
 }
 
 /* Lens ghosts strung along the line from the sun through the centre of the screen. */
-.flares { position: absolute; inset: 0; opacity: var(--flare); }
+.flares { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: var(--flare); }
 .flares i { position: absolute; left: 0; top: 0; border-radius: 50%; }
 .flares .hex { border-radius: 0; clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0 50%); }
 
 /* Fine noise over the gradients so the TV panel doesn't show colour bands. */
 .grain {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   opacity: 0.035;
 }
 
@@ -503,7 +512,7 @@ body {
 }
 
 /* Fireflies over the water at dusk and night: a handful of tiny lights that drift and blink. */
-.fireflies { position: absolute; inset: 0; opacity: var(--fireflies); }
+.fireflies { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: var(--fireflies); }
 .fireflies i {
   position: absolute;
   width: 4px;
@@ -528,7 +537,10 @@ body {
 /* A gentle darkening toward the edges, the way a lens sees it. */
 .vignette {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background: radial-gradient(ellipse 72% 70% at 50% 46%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.38) 100%);
 }
 
@@ -554,7 +566,10 @@ body {
 
 .stage {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   opacity: 0;
   transition: opacity 320ms linear;
 }
@@ -652,7 +667,10 @@ body {
 
 .tile-img {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -662,7 +680,10 @@ body {
 .tile::before {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 1;
   border-radius: inherit;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 42%);
@@ -704,7 +725,10 @@ body {
 .tile::after {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 2;
   background: linear-gradient(105deg, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0.28) 49%, rgba(255, 255, 255, 0) 66%);
   transform: translateX(-140%);
@@ -817,7 +841,10 @@ body {
 /* Fades the screen to the app's colour while it opens, so the press feels instant. */
 .curtain {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 10;
   background: var(--c, #000);
   opacity: 0;
