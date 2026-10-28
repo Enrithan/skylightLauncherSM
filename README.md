@@ -229,6 +229,7 @@ remote keys.
 | TV | Year | Tizen | Result |
 |---|---|---|---|
 | Samsung Crystal UHD UA43UE86AFULXL | 2025 | 9.0 | Everything works. A cold boot reaches Skylight after about 90 seconds. |
+| Samsung The Frame QA75LS03BASXNZ | 2022 | 6.5 | Tested with another launcher that makes the same status calls, not with Skylight itself ([#1](https://github.com/SaudSatopay/skylight-tizen/issues/1)). Coming back after Home and after ordinary web apps works. Returning from Netflix, Disney+, Prime Video and YouTube doesn't: the TV reports them as off screen even while they play. |
 
 Tried it on another Samsung? [Tell us how it went](https://github.com/SaudSatopay/skylight-tizen/issues/new?template=compatibility.yml),
 good or bad. This table grows from those reports.
@@ -311,6 +312,10 @@ transform and opacity animations. Skylight switches to a lean rendering on the T
 - The cold-boot rule relies on Skylight having been the last app on screen when the power went. After a cut
   while another app was showing, one press of Home brings Skylight back.
 - Sideloaded apps need Developer Mode to stay on, with the Host PC IP pointing at a machine that exists.
+- Skylight comes back only after apps that report themselves as on screen. On 2022 sets (Tizen 6.5),
+  Samsung's integrated apps such as Netflix, Disney+, Prime Video and YouTube don't
+  ([#1](https://github.com/SaudSatopay/skylight-tizen/issues/1)); after those, open Skylight from Samsung's
+  apps row.
 
 ## Contributing
 
