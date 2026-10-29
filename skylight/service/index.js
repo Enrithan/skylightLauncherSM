@@ -176,6 +176,7 @@ function getProcessStats(done) {
             pid: pid,
             name: name,
             cmd: cmdline.slice(0, 140) || name,
+            cmdline: cmdline.slice(0, 140) || name,
             rssMB: Math.round(rssKb / 1024),
             vmsMB: Math.round(vmsKb / 1024),
             threads: threads,

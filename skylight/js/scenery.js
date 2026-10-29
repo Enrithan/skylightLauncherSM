@@ -57,8 +57,63 @@ window.Scenery = (function () {
   var birdTimer = null;
   var meteorTimer = null;
   var visitorsFor = '';
+  var activeWeatherMode = 'clear';
+  var weatherOverride = null;
+  var isPaused = false;
+  var ALL_WEATHER_CLASSES = ['weather-clear', 'weather-cloudy', 'weather-rain', 'weather-thunder', 'weather-fog', 'weather-mist', 'weather-snow'];
+  var VALID_MODES = ['clear', 'cloudy', 'rain', 'thunder', 'fog', 'mist', 'snow'];
 
   function byId(id) { return document.getElementById(id); }
+
+  function normalizeWeatherMode(str) {
+    if (!str) return 'clear';
+    var s = (typeof str === 'string' ? str : String(str || '')).toLowerCase();
+    if (s === 'thunder' || s === 'storm' || s === 'lightning') return 'thunder';
+    if (s === 'rain' || s === 'drizzle' || s === 'shower') return 'rain';
+    if (s === 'snow' || s === 'blizzard' || s === 'ice' || s === 'sleet') return 'snow';
+    if (s === 'fog' || s === 'mist' || s === 'haze') return 'fog';
+    if (s === 'cloudy' || s === 'cloud' || s === 'clouds' || s === 'overcast') return 'cloudy';
+    if (s === 'clear' || s === 'sunny' || s === 'sun' || s === 'fair') return 'clear';
+    return s;
+  }
+
+  function classifyWeather(desc) {
+    if (!desc) return 'clear';
+    var d = (typeof desc === 'string' ? desc : String(desc || '')).toLowerCase();
+    if (d.indexOf('thunder') > -1 || d.indexOf('storm') > -1 || d.indexOf('lightning') > -1) return 'thunder';
+    if (d.indexOf('snow') > -1 || d.indexOf('blizzard') > -1 || d.indexOf('ice') > -1 || d.indexOf('sleet') > -1) return 'snow';
+    if (d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return 'rain';
+    if (d.indexOf('fog') > -1 || d.indexOf('mist') > -1 || d.indexOf('haze') > -1) return 'fog';
+    if (d.indexOf('cloud') > -1 || d.indexOf('overcast') > -1) return 'cloudy';
+    return 'clear';
+  }
+
+  function applyWeatherMode(mode) {
+    var m = normalizeWeatherMode(mode);
+    if (VALID_MODES.indexOf(m) === -1) {
+      m = 'clear';
+    }
+    activeWeatherMode = m;
+    if (!screen) return;
+    ALL_WEATHER_CLASSES.forEach(function (cls) {
+      screen.classList.remove(cls);
+    });
+    var classStr = screen.classList.toString ? screen.classList.toString() : (screen.className || '');
+    if (classStr) {
+      var tokens = classStr.split(/\s+/);
+      tokens.forEach(function (cls) {
+        if (cls && cls.indexOf('weather-') === 0 && cls !== 'weather-paused' && ALL_WEATHER_CLASSES.indexOf(cls) === -1) {
+          screen.classList.remove(cls);
+        }
+      });
+    }
+    screen.classList.add('weather-' + activeWeatherMode);
+    if (activeWeatherMode === 'fog') {
+      screen.classList.add('weather-mist');
+    } else if (activeWeatherMode === 'mist') {
+      screen.classList.add('weather-fog');
+    }
+  }
 
   // ---- Colour helpers ------------------------------------------------------------------------
 
@@ -125,6 +180,7 @@ window.Scenery = (function () {
     byId('stars').style.boxShadow = dots.join(', ');
 
     var twinkles = byId('twinkles');
+    if (twinkles) { twinkles.innerHTML = ''; twinkles.textContent = ''; }
     for (var j = 0; j < 10; j++) {
       var star = document.createElement('i');
       star.style.left = Math.round(random() * 1900) + 'px';
@@ -136,6 +192,7 @@ window.Scenery = (function () {
 
     // Fireflies: a few over the open water right of the tiles, a few along the near shore.
     var fireflies = byId('fireflies');
+    if (fireflies) { fireflies.innerHTML = ''; fireflies.textContent = ''; }
     for (var k = 0; k < 9; k++) {
       var fly = document.createElement('i');
       var onWater = k < 5;
@@ -151,6 +208,7 @@ window.Scenery = (function () {
 
   function makeGhosts() {
     var box = byId('flares');
+    if (box) { box.innerHTML = ''; box.textContent = ''; }
     return GHOSTS.map(function (g) {
       var el = document.createElement('i');
       var c = 'rgba(' + g.rgb + ', ';
@@ -219,7 +277,8 @@ window.Scenery = (function () {
     var current = SKIES[i];
     var next = SKIES[(i + 1) % SKIES.length];
     var boundary = next.from > current.from ? next.from : next.from + 24; // night wraps to dawn
-    var minutesLeft = (boundary - hour) * 60;
+    var effectiveHour = (hour < current.from) ? hour + 24 : hour;
+    var minutesLeft = (boundary - effectiveHour) * 60;
     var t = minutesLeft < BLEND_MINUTES ? 1 - minutesLeft / BLEND_MINUTES : 0;
     if (!t) return current;
 
@@ -237,32 +296,87 @@ window.Scenery = (function () {
   }
 
   function paint(s) {
-    root.setProperty('--sky-top', s.top);
-    root.setProperty('--sky-mid', s.mid);
-    root.setProperty('--sky-low', s.low);
-    root.setProperty('--floor', s.floor);
-    root.setProperty('--cloud-lit', s.cloudLit);
-    root.setProperty('--cloud-shade', s.cloudShade);
-    root.setProperty('--haze', s.haze);
-    root.setProperty('--glare', s.glare);
-    root.setProperty('--rays', s.rays.toFixed(3));
-    root.setProperty('--rim', s.rim.toFixed(3));
-    root.setProperty('--stars', s.stars.toFixed(3));
-    root.setProperty('--milky', s.milky.toFixed(3));
-    root.setProperty('--aurora', s.aurora.toFixed(3));
-    root.setProperty('--fireflies', s.fireflies.toFixed(3));
-    root.setProperty('--mist', s.mist.toFixed(3));
-    root.setProperty('--godrays', s.godrays.toFixed(3));
+    var top = s.top;
+    var mid = s.mid;
+    var low = s.low;
+    var floor = s.floor;
+    var cloudLit = s.cloudLit;
+    var cloudShade = s.cloudShade;
+    var haze = s.haze;
+    var glareCol = s.glare;
+    var rays = s.rays;
+    var rim = s.rim;
+    var stars = s.stars;
+    var milky = s.milky;
+    var aurora = s.aurora;
+    var fireflies = s.fireflies;
+    var mist = s.mist;
+    var godrays = s.godrays;
+
+    if (activeWeatherMode === 'thunder') {
+      top = mix(top, '#060814', 0.45);
+      mid = mix(mid, '#0c1024', 0.45);
+      low = mix(low, '#14182b', 0.5);
+      rays = rays * 0.1;
+      godrays = 0;
+      rim = rim * 0.2;
+      stars = stars * 0.1;
+      milky = 0;
+      aurora = 0;
+      fireflies = 0;
+    } else if (activeWeatherMode === 'rain') {
+      top = mix(top, '#182436', 0.3);
+      mid = mix(mid, '#253549', 0.35);
+      low = mix(low, '#3d4d62', 0.4);
+      rays = rays * 0.2;
+      godrays = godrays * 0.2;
+      stars = stars * 0.2;
+      milky = milky * 0.2;
+      aurora = aurora * 0.2;
+    } else if (activeWeatherMode === 'cloudy') {
+      top = mix(top, '#202a3a', 0.2);
+      mid = mix(mid, '#334458', 0.25);
+      low = mix(low, '#4e6278', 0.3);
+      rays = rays * 0.3;
+      godrays = godrays * 0.4;
+      stars = stars * 0.3;
+    } else if (activeWeatherMode === 'fog' || activeWeatherMode === 'mist') {
+      haze = mixRgba(haze, 'rgba(210, 225, 240, 0.65)', 0.5);
+      mist = Math.max(mist, 0.85);
+      rays = rays * 0.1;
+      stars = stars * 0.15;
+    } else if (activeWeatherMode === 'snow') {
+      top = mix(top, '#151e30', 0.2);
+      low = mix(low, '#4a5d77', 0.25);
+      rim = Math.max(rim, 0.65);
+    }
+
+    root.setProperty('--sky-top', top);
+    root.setProperty('--sky-mid', mid);
+    root.setProperty('--sky-low', low);
+    root.setProperty('--floor', floor);
+    root.setProperty('--cloud-lit', cloudLit);
+    root.setProperty('--cloud-shade', cloudShade);
+    root.setProperty('--haze', haze);
+    root.setProperty('--glare', glareCol);
+    root.setProperty('--rays', rays.toFixed(3));
+    root.setProperty('--rim', rim.toFixed(3));
+    root.setProperty('--stars', stars.toFixed(3));
+    root.setProperty('--milky', milky.toFixed(3));
+    root.setProperty('--aurora', aurora.toFixed(3));
+    root.setProperty('--fireflies', fireflies.toFixed(3));
+    root.setProperty('--mist', mist.toFixed(3));
+    root.setProperty('--godrays', godrays.toFixed(3));
     // Mountains fade into the haze with distance; the lake mirrors the horizon, darkened.
-    root.setProperty('--ridge-far', mix(s.low, s.mid, 0.45));
-    root.setProperty('--ridge-mid', mix(s.mid, s.floor, 0.38));
-    root.setProperty('--ridge-near', mix(s.mid, s.floor, 0.78));
-    root.setProperty('--pines', mix(s.floor, '#000000', 0.5));
-    root.setProperty('--lake-top', mix(s.low, s.floor, 0.55));
-    screen.classList.toggle('is-night', s.stars >= 0.5);
+    root.setProperty('--ridge-far', mix(low, mid, 0.45));
+    root.setProperty('--ridge-mid', mix(mid, floor, 0.38));
+    root.setProperty('--ridge-near', mix(mid, floor, 0.78));
+    root.setProperty('--pines', mix(floor, '#000000', 0.5));
+    root.setProperty('--lake-top', mix(low, floor, 0.55));
+    screen.classList.toggle('is-night', stars >= 0.5);
     // The animated layers only run when they can be seen.
-    screen.classList.toggle('has-aurora', s.aurora > 0.05);
-    screen.classList.toggle('has-fireflies', s.fireflies > 0.05);
+    screen.classList.toggle('has-aurora', aurora > 0.05);
+    screen.classList.toggle('has-fireflies', fireflies > 0.05);
   }
 
   // ---- Per minute ----------------------------------------------------------------------------
@@ -271,8 +385,11 @@ window.Scenery = (function () {
   function placeBodies(now) {
     var hour = now.getHours() + now.getMinutes() / 60;
     var sunUp = hour >= SUNRISE && hour <= SUNSET;
+    var span = SUNSET - SUNRISE;
+    if (span <= 0) span = 12;
     var night = 24 - SUNSET + SUNRISE;
-    var t = sunUp ? (hour - SUNRISE) / (SUNSET - SUNRISE) : ((hour - SUNSET + 24) % 24) / night;
+    if (night <= 0) night = 12;
+    var t = sunUp ? (hour - SUNRISE) / span : ((hour - SUNSET + 24) % 24) / night;
     var x = 1920 * (0.42 + 0.53 * t);
     var y = HORIZON - Math.sin(Math.PI * t) * (HORIZON - 150);
 
@@ -333,24 +450,26 @@ window.Scenery = (function () {
   var liveWeather = null;
 
   function weatherEmoji(desc) {
-    var d = (desc || '').toLowerCase();
-    if (d.indexOf('sun') > -1 || d.indexOf('clear') > -1) return '☀️';
+    var d = (typeof desc === 'string' ? desc : String(desc || '')).toLowerCase();
+    if (d.indexOf('thunder') > -1 || d.indexOf('storm') > -1 || d.indexOf('lightning') > -1) return '🌩️';
+    if (d.indexOf('snow') > -1 || d.indexOf('blizzard') > -1 || d.indexOf('ice') > -1 || d.indexOf('sleet') > -1) return '🌨️';
+    if (d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return '🌧️';
+    if (d.indexOf('fog') > -1 || d.indexOf('mist') > -1 || d.indexOf('haze') > -1) return '🌫️';
     if (d.indexOf('partly') > -1) return '⛅';
     if (d.indexOf('cloud') > -1 || d.indexOf('overcast') > -1) return '☁️';
-    if (d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return '🌧️';
-    if (d.indexOf('thunder') > -1 || d.indexOf('storm') > -1) return '🌩️';
-    if (d.indexOf('snow') > -1 || d.indexOf('blizzard') > -1 || d.indexOf('ice') > -1) return '🌨️';
-    if (d.indexOf('fog') > -1 || d.indexOf('mist') > -1 || d.indexOf('haze') > -1) return '🌫️';
+    if (d.indexOf('sun') > -1 || d.indexOf('clear') > -1) return '☀️';
     return '🌡️';
   }
 
   function formatAstroTime(t) {
     if (!t) return '';
+    if (typeof t !== 'string') return clock(t);
     return t.replace(/^0/, '').toLowerCase();
   }
 
   function parseAstroHours(str, fallback) {
-    if (!str) return fallback;
+    if (typeof str === 'number' && !isNaN(str)) return str;
+    if (typeof str !== 'string' || !str) return fallback;
     var m = str.match(/(\d+):(\d+)\s*(AM|PM)?/i);
     if (!m) return fallback;
     var h = parseInt(m[1], 10);
@@ -363,11 +482,19 @@ window.Scenery = (function () {
 
   // The quiet line under the date: real weather and sunrise/sunset, or moon phase fallback.
   function writeDetail(now, sunUp) {
-    if (liveWeather && typeof liveWeather.tempC === 'number') {
-      var icon = weatherEmoji(liveWeather.desc);
-      var condition = liveWeather.desc || 'Clear';
+    var tempVal = liveWeather ? (typeof liveWeather.tempC === 'number' ? liveWeather.tempC : parseFloat(liveWeather.tempC)) : NaN;
+    if (liveWeather && !isNaN(tempVal)) {
+      var cond = weatherOverride ? weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1) : (typeof liveWeather.desc === 'string' ? liveWeather.desc : 'Clear');
+      var icon = weatherEmoji(weatherOverride || liveWeather.desc);
       var astro = sunUp ? ('Sunset ' + formatAstroTime(liveWeather.sunset)) : ('Sunrise ' + formatAstroTime(liveWeather.sunrise));
-      detail.textContent = icon + ' ' + liveWeather.tempC + '°C ' + condition + '  ·  ' + astro;
+      detail.textContent = icon + ' ' + tempVal + '°C ' + cond + '  ·  ' + astro;
+      return;
+    }
+    if (weatherOverride) {
+      var iconO = weatherEmoji(weatherOverride);
+      var condO = weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1);
+      var astroO = sunUp ? ('Sunset ' + clock(SUNSET)) : ('Sunrise ' + clock(SUNRISE));
+      detail.textContent = iconO + ' ' + condO + '  ·  ' + astroO;
       return;
     }
     var name = MOON_NAMES[Math.round(moonPhase(now) * 8) % 8];
@@ -375,19 +502,147 @@ window.Scenery = (function () {
       : name + '  ·  Sunrise ' + clock(SUNRISE);
   }
 
+  function getWeatherMicroIconSvg(mode) {
+    var m = normalizeWeatherMode(mode);
+    switch (m) {
+      case 'clear':
+      case 'sun':
+      case 'sunny':
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="14" cy="14" r="5" fill="#f59e0b" class="weather-icon--sun"/>' +
+          '<g stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" class="weather-icon--sun">' +
+            '<path d="M14 3v3M14 22v3M3 14h3M22 14h3M6.2 6.2l2.1 2.1M19.7 19.7l2.1 2.1M6.2 21.8l2.1-2.1M19.7 8.3l2.1-2.1"/>' +
+          '</g>' +
+        '</svg>';
+      case 'cloudy':
+      case 'clouds':
+      case 'cloud':
+      case 'overcast':
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path class="weather-icon--cloud" d="M7 19a4.5 4.5 0 0 1-.2-9 6.5 6.5 0 0 1 12.4-1.5A4.5 4.5 0 0 1 22 19H7z" fill="#94a3b8"/>' +
+        '</svg>';
+      case 'rain':
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11.5-1.5A3.5 3.5 0 0 1 19 14H6z" fill="#94a3b8"/>' +
+          '<path class="weather-icon--drop" d="M9 17l-1.5 3M14 17l-1.5 3M19 17l-1.5 3" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>' +
+        '</svg>';
+      case 'thunder':
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11.5-1.5A3.5 3.5 0 0 1 19 14H6z" fill="#64748b"/>' +
+          '<polygon class="weather-icon--flash" points="13,12 9,18 13,18 11,25 17,17 13,17" fill="#facc15"/>' +
+        '</svg>';
+      case 'snow':
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11.5-1.5A3.5 3.5 0 0 1 19 14H6z" fill="#94a3b8"/>' +
+          '<g class="weather-icon--snow" fill="#e0f2fe">' +
+            '<circle cx="9" cy="18" r="1.5"/>' +
+            '<circle cx="14" cy="20" r="1.5"/>' +
+            '<circle cx="19" cy="18" r="1.5"/>' +
+          '</g>' +
+        '</svg>';
+      case 'fog':
+      case 'mist':
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#94a3b8" stroke-width="2" stroke-linecap="round">' +
+          '<path class="weather-icon--cloud" d="M5 9h18M3 13h22M6 17h16M8 21h12"/>' +
+        '</svg>';
+      default:
+        return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+          '<circle cx="14" cy="14" r="5" fill="#f59e0b" class="weather-icon--sun"/>' +
+        '</svg>';
+    }
+  }
+
+  function updateWeatherBadge(w) {
+    var badge = byId('weatherBadge');
+    if (!badge) return;
+    var microIcon = byId('weatherMicroIcon');
+    var tempEl = byId('weatherTemp');
+    var descEl = byId('weatherDesc');
+    if (!w) {
+      if (descEl) descEl.textContent = 'Detecting...';
+      return;
+    }
+    var mode = w.mode || (w.desc ? classifyWeather(w.desc) : 'clear');
+    if (microIcon) microIcon.innerHTML = getWeatherMicroIconSvg(mode);
+    if (tempEl) {
+      if (typeof w.tempC === 'number') {
+        tempEl.textContent = w.tempC + '°C';
+      } else if (w.tempC) {
+        tempEl.textContent = String(w.tempC).indexOf('°C') !== -1 ? String(w.tempC) : (w.tempC + '°C');
+      }
+    }
+    if (descEl && w.desc) {
+      descEl.textContent = w.desc;
+    }
+  }
+
   function setWeather(w) {
     liveWeather = w;
     if (w && w.sunrise) SUNRISE = parseAstroHours(w.sunrise, SUNRISE);
     if (w && w.sunset) SUNSET = parseAstroHours(w.sunset, SUNSET);
+    var mode = weatherOverride || (w && w.desc ? classifyWeather(w.desc) : 'clear');
+    applyWeatherMode(mode);
+    if (sky) paint(sky);
     if (detail && live) {
       placeBodies(new Date());
+    }
+    updateWeatherBadge(w);
+  }
+
+  function setWeatherMode(mode) {
+    if (mode) {
+      var norm = normalizeWeatherMode(mode);
+      weatherOverride = VALID_MODES.indexOf(norm) !== -1 ? norm : null;
+    } else {
+      weatherOverride = null;
+    }
+    var currentMode = weatherOverride || (liveWeather && liveWeather.desc ? classifyWeather(liveWeather.desc) : 'clear');
+    applyWeatherMode(currentMode);
+    if (sky) paint(sky);
+    if (detail && live) {
+      placeBodies(new Date());
+    }
+    var tempVal = liveWeather && typeof liveWeather.tempC === 'number' ? liveWeather.tempC : (
+      byId('weatherTemp') && !isNaN(parseInt(byId('weatherTemp').textContent, 10)) ? parseInt(byId('weatherTemp').textContent, 10) : 20
+    );
+    var badgeData = weatherOverride ? {
+      mode: weatherOverride,
+      desc: weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1),
+      tempC: tempVal
+    } : liveWeather;
+    updateWeatherBadge(badgeData);
+  }
+
+  function getWeatherMode() {
+    return activeWeatherMode;
+  }
+
+  function pause() {
+    isPaused = true;
+    screen = screen || byId('screen');
+    if (screen) screen.classList.add('weather-paused');
+    clearTimeout(birdTimer);
+    clearTimeout(meteorTimer);
+    birdTimer = null;
+    meteorTimer = null;
+    visitorsFor = '';
+  }
+
+  function resume() {
+    isPaused = false;
+    screen = screen || byId('screen');
+    if (screen) screen.classList.remove('weather-paused');
+    if (live) {
+      update(new Date());
+    } else if (sky) {
+      scheduleVisitors(sky.stars >= 0.5 ? 'night' : (sky.rays > 0 || sky.name.indexOf('day') >= 0 ? 'day' : 'dusk'));
     }
   }
 
   // ---- Visitors: birds by day, shooting stars by night ---------------------------------------
 
   function scheduleVisitors(kind) {
-    if (lean || kind === visitorsFor) return;
+    if (lean || isPaused || kind === visitorsFor) return;
     visitorsFor = kind;
     // `?visitors` (desktop preview only) sends them straight away so they can be checked.
     var soon = /[?&]visitors\b/.test(location.search);
@@ -411,6 +666,7 @@ window.Scenery = (function () {
       void birds.offsetWidth;
       birds.classList.add('is-flying');
     }
+    if (isPaused) return;
     birdTimer = setTimeout(sendBirds, 150000 + Math.random() * 150000);
   }
 
@@ -423,6 +679,7 @@ window.Scenery = (function () {
       void meteor.offsetWidth;
       meteor.classList.add('is-falling');
     }
+    if (isPaused) return;
     meteorTimer = setTimeout(sendMeteor, 50000 + Math.random() * 70000);
   }
 
@@ -463,6 +720,26 @@ window.Scenery = (function () {
       ghosts = [];
       sprinkleStarsLean();
     }
+
+    var qWeather = /[?&]weather=([a-zA-Z]+)/i.exec(location.search);
+    if (qWeather) {
+      var parsed = normalizeWeatherMode(qWeather[1]);
+      weatherOverride = VALID_MODES.indexOf(parsed) !== -1 ? parsed : null;
+    }
+    applyWeatherMode(weatherOverride || 'clear');
+    if (weatherOverride) {
+      var descEl = byId('weatherDesc');
+      var tempEl = byId('weatherTemp');
+      var hasBadge = descEl && descEl.textContent && descEl.textContent !== 'Detecting...' &&
+                     tempEl && tempEl.textContent && tempEl.textContent !== '--°C';
+      if (!hasBadge) {
+        updateWeatherBadge({
+          mode: weatherOverride,
+          desc: weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1),
+          tempC: 20
+        });
+      }
+    }
   }
 
   var live = false;
@@ -486,5 +763,16 @@ window.Scenery = (function () {
     placeBodies(now);
   }
 
-  return { init: init, update: update, setWeather: setWeather };
+  return {
+    init: init,
+    update: update,
+    setWeather: setWeather,
+    setWeatherMode: setWeatherMode,
+    getWeatherMode: getWeatherMode,
+    pause: pause,
+    resume: resume,
+    classifyWeather: classifyWeather,
+    updateWeatherBadge: updateWeatherBadge,
+    getWeatherMicroIconSvg: getWeatherMicroIconSvg
+  };
 })();

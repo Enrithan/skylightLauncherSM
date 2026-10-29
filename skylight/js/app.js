@@ -674,8 +674,10 @@
   function open(app) {
     launching = true;
     save('opened.' + app.id, String(Date.now()));
+    clearTimeout(tickTimer);
     curtain.style.setProperty('--c', app.tile);
     curtain.classList.add('is-on');
+    Scenery.pause();
     setTimeout(function () {
       launchInGroup(app.id, function () {
         // The helper watches (its own process, every few seconds). The page only watches itself
@@ -943,6 +945,12 @@
   function uncover() {
     launching = false;
     curtain.classList.remove('is-on');
+    if (!document.hidden && typeof Scenery !== 'undefined' && typeof Scenery.resume === 'function') {
+      Scenery.resume();
+    }
+    if (!document.hidden) {
+      tick();
+    }
   }
 
   function showLaunchError(app) {
@@ -997,12 +1005,112 @@
     });
   }
 
-  // ---- Live Weather --------------------------------------------------------------------------
+  // ---- Live Weather & Weather Badge ----------------------------------------------------------
+  var weatherBadgeEl = byId('weatherBadge');
+  var weatherMicroIconEl = byId('weatherMicroIcon');
+  var weatherTempEl = byId('weatherTemp');
+  var weatherDescEl = byId('weatherDesc');
   var lastWeatherCheck = 0;
+
+  function getWeatherMicroIconSvg(mode) {
+    if (typeof Scenery !== 'undefined' && typeof Scenery.getWeatherMicroIconSvg === 'function') {
+      return Scenery.getWeatherMicroIconSvg(mode);
+    }
+    var m = (typeof mode === 'string' ? mode : String(mode || '')).toLowerCase();
+    if (m === 'thunder' || m === 'storm' || m === 'lightning') {
+      return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11.5-1.5A3.5 3.5 0 0 1 19 14H6z" fill="#64748b"/><polygon class="weather-icon--flash" points="13,12 9,18 13,18 11,25 17,17 13,17" fill="#facc15"/></svg>';
+    }
+    if (m === 'snow' || m === 'blizzard' || m === 'ice' || m === 'sleet') {
+      return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11.5-1.5A3.5 3.5 0 0 1 19 14H6z" fill="#94a3b8"/><g class="weather-icon--snow" fill="#e0f2fe"><circle cx="9" cy="18" r="1.5"/><circle cx="14" cy="20" r="1.5"/><circle cx="19" cy="18" r="1.5"/></g></svg>';
+    }
+    if (m === 'rain' || m === 'drizzle' || m === 'shower') {
+      return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 14a4 4 0 0 1 0-8 6 6 0 0 1 11.5-1.5A3.5 3.5 0 0 1 19 14H6z" fill="#94a3b8"/><path class="weather-icon--drop" d="M9 17l-1.5 3M14 17l-1.5 3M19 17l-1.5 3" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/></svg>';
+    }
+    if (m === 'fog' || m === 'mist' || m === 'haze') {
+      return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><path class="weather-icon--cloud" d="M5 9h18M3 13h22M6 17h16M8 21h12"/></svg>';
+    }
+    if (m === 'clouds' || m === 'cloud' || m === 'cloudy' || m === 'overcast') {
+      return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="weather-icon--cloud" d="M7 19a4.5 4.5 0 0 1-.2-9 6.5 6.5 0 0 1 12.4-1.5A4.5 4.5 0 0 1 22 19H7z" fill="#94a3b8"/></svg>';
+    }
+    return '<svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="14" cy="14" r="5" fill="#f59e0b" class="weather-icon--sun"/><g stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" class="weather-icon--sun"><path d="M14 3v3M14 22v3M3 14h3M22 14h3M6.2 6.2l2.1 2.1M19.7 19.7l2.1 2.1M6.2 21.8l2.1-2.1M19.7 8.3l2.1-2.1"/></g></svg>';
+  }
+
+  function resolveWeatherMode(descOrMode) {
+    var s = (typeof descOrMode === 'string' ? descOrMode : String(descOrMode || '')).toLowerCase();
+    if (s.indexOf('thunder') > -1 || s.indexOf('storm') > -1 || s.indexOf('lightning') > -1) return 'thunder';
+    if (s.indexOf('snow') > -1 || s.indexOf('blizzard') > -1 || s.indexOf('ice') > -1 || s.indexOf('sleet') > -1) return 'snow';
+    if (s.indexOf('rain') > -1 || s.indexOf('drizzle') > -1 || s.indexOf('shower') > -1) return 'rain';
+    if (s.indexOf('fog') > -1 || s.indexOf('mist') > -1 || s.indexOf('haze') > -1) return 'fog';
+    if (s.indexOf('cloud') > -1 || s.indexOf('overcast') > -1) return 'clouds';
+    return 'sun';
+  }
+
+  function updateWeatherBadge(w) {
+    if (!weatherBadgeEl) weatherBadgeEl = byId('weatherBadge');
+    if (!weatherMicroIconEl) weatherMicroIconEl = byId('weatherMicroIcon');
+    if (!weatherTempEl) weatherTempEl = byId('weatherTemp');
+    if (!weatherDescEl) weatherDescEl = byId('weatherDesc');
+    if (!weatherBadgeEl) return;
+    if (!w) {
+      if (weatherDescEl) weatherDescEl.textContent = 'Detecting...';
+      return;
+    }
+    var mode = resolveWeatherMode(w.mode || w.desc);
+    if (weatherMicroIconEl) weatherMicroIconEl.innerHTML = getWeatherMicroIconSvg(mode);
+    if (weatherTempEl) {
+      if (typeof w.tempC === 'number') {
+        weatherTempEl.textContent = w.tempC + '°C';
+      } else if (w.tempC) {
+        weatherTempEl.textContent = String(w.tempC).indexOf('°C') !== -1 ? String(w.tempC) : (w.tempC + '°C');
+      }
+    }
+    if (weatherDescEl && w.desc) {
+      weatherDescEl.textContent = w.desc;
+    }
+  }
+
+  // Hook Scenery.setWeather so any call to it also updates the weather badge
+  if (typeof Scenery !== 'undefined' && Scenery.setWeather) {
+    var origScenerySetWeather = Scenery.setWeather;
+    Scenery.setWeather = function (w) {
+      origScenerySetWeather.call(Scenery, w);
+      updateWeatherBadge(w);
+    };
+  }
+
+  // Support deterministic preview via query parameter (?weather=...)
+  (function initWeatherPreview() {
+    var qWeather = /[?&]weather=([a-zA-Z]+)/i.exec(location.search);
+    if (qWeather) {
+      var rawMode = qWeather[1].toLowerCase();
+      var previewTable = {
+        rain: { tempC: 16, desc: 'Rain', mode: 'rain' },
+        drizzle: { tempC: 15, desc: 'Drizzle', mode: 'rain' },
+        thunder: { tempC: 19, desc: 'Thunderstorm', mode: 'thunder' },
+        storm: { tempC: 19, desc: 'Thunderstorm', mode: 'thunder' },
+        snow: { tempC: -2, desc: 'Snow', mode: 'snow' },
+        fog: { tempC: 11, desc: 'Mist & Fog', mode: 'fog' },
+        mist: { tempC: 11, desc: 'Mist & Fog', mode: 'fog' },
+        cloudy: { tempC: 18, desc: 'Cloudy', mode: 'clouds' },
+        clouds: { tempC: 18, desc: 'Cloudy', mode: 'clouds' },
+        clear: { tempC: 22, desc: 'Clear', mode: 'sun' },
+        sun: { tempC: 22, desc: 'Sunny', mode: 'sun' }
+      };
+      var sample = previewTable[rawMode] || {
+        tempC: 20,
+        desc: qWeather[1].charAt(0).toUpperCase() + qWeather[1].slice(1),
+        mode: resolveWeatherMode(rawMode)
+      };
+      updateWeatherBadge(sample);
+    }
+  })();
 
   try {
     var cachedW = JSON.parse(load('cachedWeather') || 'null');
-    if (cachedW) Scenery.setWeather(cachedW);
+    if (cachedW) {
+      Scenery.setWeather(cachedW);
+      updateWeatherBadge(cachedW);
+    }
   } catch (e) {}
 
   function fetchWeather() {
@@ -1014,6 +1122,7 @@
         if (parsed && parsed.weather) {
           save('cachedWeather', JSON.stringify(parsed.weather));
           Scenery.setWeather(parsed.weather);
+          updateWeatherBadge(parsed.weather);
         }
       } catch (e) {}
     });
@@ -1100,6 +1209,7 @@
     tellHelper({ cmd: 'stop' });
     uncover();
     if (menu) closeMenu();
+    Scenery.resume();
     tick();
     if (revealPending) reveal();
     fetchCalendarEvents();
@@ -1124,6 +1234,8 @@
 
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden) { resume(); return; }
+    clearTimeout(tickTimer);
+    Scenery.pause();
     if (launching || watch) return; // an app we opened took the screen; the watcher handles it
     hiddenAt = Date.now();
     note('left the screen without opening anything (Home, or standby)');

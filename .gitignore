@@ -14,6 +14,7 @@ tools/skylight-boot-rule.json
 .claude/
 .vscode/
 .idea/
+.agents/
 AGENT_HANDOFF.md
 *.log
 temp/

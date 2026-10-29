@@ -1,0 +1,209 @@
+﻿[
+    {
+        "Category":  "Packaging",
+        "Description":  "Packaging script executes cleanly with exit code 0",
+        "Passed":  true,
+        "Measured":  "Exit code 0",
+        "Target":  "Exit code 0",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Packaging",
+        "Description":  "Target widget file dist/Skylight.wgt exists",
+        "Passed":  true,
+        "Measured":  "File exists: True",
+        "Target":  "true",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Packaging",
+        "Description":  "Package size \u003c= 680 KB (696,320 bytes)",
+        "Passed":  true,
+        "Measured":  "666568 bytes (650.95 KB)",
+        "Target":  "\u003c= 696,320 bytes (680 KB)",
+        "Severity":  "CRITICAL",
+        "Notes":  "Headroom: 29752 bytes (29.05 KB, 4.27%)"
+    },
+    {
+        "Category":  "Packaging",
+        "Description":  "Zip entry paths use forward slashes (Tizen spec compliance)",
+        "Passed":  true,
+        "Measured":  "Backslashes present: False",
+        "Target":  "No backslashes",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Packaging",
+        "Description":  "No development artifacts or OS metadata in archive",
+        "Passed":  true,
+        "Measured":  "Found 0 artifact files ()",
+        "Target":  "0 bloat files",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Asset Bloat",
+        "Description":  "No non-runtime license or desktop-only shims bundled",
+        "Passed":  false,
+        "Measured":  "Found 3 non-runtime entries: fonts/atkinson-LICENSE.txt (1.95 KB comp); fonts/fraunces-LICENSE.txt (1.92 KB comp); js/mock-tizen.js (3.43 KB comp)",
+        "Target":  "0 non-runtime files",
+        "Severity":  "WARNING",
+        "Notes":  "Bundling LICENSE.txt and mock-tizen.js wastes ~7.1 KB compressed"
+    },
+    {
+        "Category":  "Asset Bloat",
+        "Description":  "No duplicate raster/vector icon pairs",
+        "Passed":  false,
+        "Measured":  "Found 3 duplicate pairs: icons/disneyplus (.png \u0026 .svg dual-bundled); icons/appletv (.png \u0026 .svg dual-bundled); icons/paramountplus (.png \u0026 .svg dual-bundled)",
+        "Target":  "0 redundant pairs",
+        "Severity":  "WARNING",
+        "Notes":  "Duplicate icons consume unnecessary flash and zip budget"
+    },
+    {
+        "Category":  "CSS Performance",
+        "Description":  "Absence of \u0027filter: blur()\u0027 in app.css (Mali-G52 GPU kill switch)",
+        "Passed":  true,
+        "Measured":  "filter: blur detected: False",
+        "Target":  "No filter: blur",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "CSS Performance",
+        "Description":  "Absence of \u0027backdrop-filter\u0027 in app.css (strictly forbidden on Tizen 6.5)",
+        "Passed":  true,
+        "Measured":  "backdrop-filter detected: False",
+        "Target":  "No backdrop-filter",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "CSS Performance",
+        "Description":  "Absence of dynamic blur or backdrop-filter injection in JS/HTML",
+        "Passed":  true,
+        "Measured":  "Dynamic blur injection found: False",
+        "Target":  "No dynamic blur injection",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Lifecycle Pause",
+        "Description":  "Unconditional pause selector exists (.screen.weather-paused *)",
+        "Passed":  true,
+        "Measured":  "Selector present: True",
+        "Target":  "true",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Lifecycle Pause",
+        "Description":  "Pause rule enforces \u0027animation-play-state: paused !important\u0027",
+        "Passed":  true,
+        "Measured":  "Enforces !important: True",
+        "Target":  "true",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Lifecycle Pause",
+        "Description":  "Pause rule covers ::before and ::after pseudo-elements",
+        "Passed":  true,
+        "Measured":  "Pseudo-elements covered: True",
+        "Target":  "true",
+        "Severity":  "WARNING",
+        "Notes":  ""
+    },
+    {
+        "Category":  "CSS Performance",
+        "Description":  "Zero layout reflow triggers (top/left/margin/width) in all @keyframes",
+        "Passed":  true,
+        "Measured":  "Found 0 reflow triggers ()",
+        "Target":  "0 reflow triggers",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "CSS Performance",
+        "Description":  "All weather particle animations strictly use translate3d",
+        "Passed":  true,
+        "Measured":  "Found 0 2D translate violations ()",
+        "Target":  "0 2D translate violations",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "GPU Compositing",
+        "Description":  "Hardware layer promotion (will-change) on all 6 weather layer classes",
+        "Passed":  true,
+        "Measured":  "Missing on: ",
+        "Target":  "All 6 classes promoted",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Telemetry",
+        "Description":  "Tier 4 device telemetry suite passes cleanly (exit 0)",
+        "Passed":  true,
+        "Measured":  "Exit code 0",
+        "Target":  "Exit code 0",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Telemetry",
+        "Description":  "WebKit UI process RSS \u003c= 75 MB under continuous weather rendering",
+        "Passed":  true,
+        "Measured":  "62 MB",
+        "Target":  "\u003c= 75 MB",
+        "Severity":  "CRITICAL",
+        "Notes":  "Source: Authoritative Tier 4 Telemetry Fixture (validated via Survey 3)"
+    },
+    {
+        "Category":  "Telemetry",
+        "Description":  "System idle CPU load \u003c= 25%",
+        "Passed":  true,
+        "Measured":  "12%",
+        "Target":  "\u003c= 25%",
+        "Severity":  "CRITICAL",
+        "Notes":  "Source: Authoritative Tier 4 Telemetry Fixture (validated via Survey 3)"
+    },
+    {
+        "Category":  "Telemetry",
+        "Description":  "SkylightWatch helper background RSS \u003c= 5 MB",
+        "Passed":  true,
+        "Measured":  "5 MB",
+        "Target":  "\u003c= 5 MB",
+        "Severity":  "CRITICAL",
+        "Notes":  "Source: Authoritative Tier 4 Telemetry Fixture (validated via Survey 3)"
+    },
+    {
+        "Category":  "Regression",
+        "Description":  "Tier 1: Feature Coverage (87/87 tests)",
+        "Passed":  true,
+        "Measured":  "Exit code 0",
+        "Target":  "Exit code 0 (87/87 PASS)",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    },
+    {
+        "Category":  "Regression",
+        "Description":  "Tier 2: Boundary \u0026 Corner Cases (86/87 tests passed)",
+        "Passed":  false,
+        "Measured":  "Exit code 1 (1 defect observed in F1.3: classifyWeather non-string TypeError)",
+        "Target":  "Exit code 0 (87/87 PASS)",
+        "Severity":  "CRITICAL",
+        "Notes":  "Known defect in scenery.js line 81: desc.toLowerCase() throws on non-string"
+    },
+    {
+        "Category":  "Regression",
+        "Description":  "Tier 3: Pairwise Combinations (120/120 tests)",
+        "Passed":  true,
+        "Measured":  "Exit code 0",
+        "Target":  "Exit code 0 (120/120 PASS)",
+        "Severity":  "CRITICAL",
+        "Notes":  ""
+    }
+]

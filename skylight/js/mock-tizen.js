@@ -90,10 +90,13 @@
   var viewport = document.querySelector('meta[name="viewport"]');
   if (viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1');
 
-  //   (no ?still)   shows the demo bar: the keys to use, and the sky at other times of day
+  //   (no ?still)   shows the demo bar: the keys to use, and the sky at other times of day and weather
   if (!/[?&]still\b/.test(location.search)) {
     var times = [['Dawn', '6.6'], ['Noon', '12.5'], ['Golden hour', '17.1'], ['Dusk', '19.4'], ['Night', '22.4'], ['Now', '']];
+    var weathers = [['Clear', 'clear'], ['Cloudy', 'cloudy'], ['Rain', 'rain'], ['Thunder', 'thunder'], ['Fog', 'fog'], ['Snow', 'snow']];
     var current = hour ? hour[1] : '';
+    var weatherMatch = /[?&]weather=([a-zA-Z]+)/i.exec(location.search);
+    var curWeather = weatherMatch ? weatherMatch[1].toLowerCase() : '';
     var bar = document.createElement('nav');
     bar.className = 'demo-bar';
     bar.setAttribute('aria-label', 'Demo controls');
@@ -114,6 +117,23 @@
       });
       bar.appendChild(button);
     });
+    var sep = document.createElement('span');
+    sep.className = 'demo-sep';
+    sep.textContent = '|';
+    bar.appendChild(sep);
+    weathers.forEach(function (w) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = w[0];
+      button.setAttribute('aria-pressed', String(w[1] === curWeather));
+      button.addEventListener('click', function () {
+        var params = new URLSearchParams(location.search);
+        if (w[1]) params.set('weather', w[1]); else params.delete('weather');
+        var query = params.toString();
+        location.search = query ? '?' + query : '';
+      });
+      bar.appendChild(button);
+    });
     // Keys pressed on the bar are for the bar, not for the home screen behind it.
     bar.addEventListener('keydown', function (e) { e.stopPropagation(); });
     var barStyle = document.createElement('style');
@@ -124,6 +144,7 @@
       ' font: 500 14px/1.2 Atkinson, sans-serif; color: rgba(244, 238, 228, 0.82);' +
       ' background: rgba(3, 5, 26, 0.74); border: 1px solid rgba(255, 255, 255, 0.14); }' +
       '.demo-tip { margin-right: 10px; }' +
+      '.demo-sep { margin: 0 4px; opacity: 0.35; }' +
       '.demo-bar button { font: inherit; color: inherit; background: none; border: 0; border-radius: 16px; padding: 6px 11px; cursor: pointer; }' +
       '.demo-bar button:hover { background: rgba(255, 255, 255, 0.09); }' +
       '.demo-bar button[aria-pressed="true"] { background: rgba(255, 207, 147, 0.2); color: #ffe6c4; }' +

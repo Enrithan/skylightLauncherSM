@@ -43,7 +43,10 @@
         </svg>
       </div>
       <div id="meteor" class="meteor"></div>
-      <div id="lake" class="lake"></div>
+      <div id="weatherStormGlow" class="weather-storm-glow"></div>
+      <div id="lake" class="lake">
+        <div id="weatherLakeShimmer" class="weather-lake-shimmer"></div>
+      </div>
       <!-- The mountains mirrored in the water. -->
       <svg class="ridges ridges--reflection" viewBox="0 0 1920 160" preserveAspectRatio="none">
         <use href="#ridgeFar" class="ridge--far"/>
@@ -55,6 +58,7 @@
         <div id="glitterB" class="glitter-layer glitter-layer--alt"></div>
       </div>
       <div class="mist"></div>
+      <div id="weatherValleyMist" class="weather-valley-mist"></div>
       <div class="ripple" style="left: 1610px; top: 600px;"></div>
       <div class="ripple ripple--two" style="left: 1700px; top: 660px;"></div>
       <svg class="ridges" viewBox="0 0 1920 160" preserveAspectRatio="none">
@@ -67,19 +71,35 @@
         <path d="M0 120V70l14-34 6 12 8-26 10 22 6-10 12 36 8-18 10 26 6-12 14 30 10-40 8 16 10-22 12 34 6-8 12 28 8-20 10 24 8-10 12 32 10-38 8 14 10-24 14 36 6-8 10 26 8-16 12 28 6 6V120Z"/>
         <path d="M1920 120V72l-12-30-6 10-10-28-10 24-6-12-12 36-8-18-10 26-6-12-14 30-10-40-8 16-10-22-12 34-6-8-12 28-8-20-10 24-8-10-12 32-10-38-8 14-10-24-14 36-6-8-10 26-8-16-12 28-6 6V120Z"/>
       </svg>
+      <div id="weatherFrontMist" class="weather-front-mist"></div>
       <div id="fireflies" class="fireflies"></div>
       <div id="flares" class="flares"></div>
       <div class="vignette"></div>
       <div id="grain" class="grain"></div>
+      <div id="weatherLayer" class="weather-layer" aria-hidden="true">
+        <div class="weather-rain-streak weather-rain-streak--1"></div>
+        <div class="weather-rain-streak weather-rain-streak--2"></div>
+        <div class="weather-snow-flake weather-snow-flake--1"></div>
+        <div class="weather-snow-flake weather-snow-flake--2"></div>
+      </div>
     </div>
     <div id="glowA" class="glow" aria-hidden="true"></div>
     <div id="glowB" class="glow" aria-hidden="true"></div>
 
     <main class="stage">
       <header class="masthead">
-        <p id="greeting" class="greeting">Good evening</p>
-        <p class="clock"><span id="time">9:41</span><span id="meridiem" class="meridiem">pm</span></p>
-        <div class="calendar-panel">
+        <div class="glass-card glass-card--clock">
+          <p id="greeting" class="greeting">Good evening</p>
+          <p class="clock"><span id="time">9:41</span><span id="meridiem" class="meridiem">pm</span></p>
+        </div>
+        <div class="glass-card glass-card--calendar calendar-panel">
+          <div id="weatherBadge" class="weather-badge">
+            <div id="weatherMicroIcon" class="weather-micro-icon"></div>
+            <div class="weather-info">
+              <span id="weatherTemp" class="weather-temp">--°C</span>
+              <span id="weatherDesc" class="weather-desc">Detecting...</span>
+            </div>
+          </div>
           <p id="date" class="date"></p>
           <p id="detail" class="detail"></p>
           <div id="calendarEvents" class="calendar-events"></div>
