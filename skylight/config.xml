@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
-        id="http://skylight.home/tv" version="1.18.19" viewmodes="maximized">
+        id="http://skylight.home/tv" version="1.18.20" viewmodes="maximized">
     <!-- Lets Skylight ask the TV's own local services (on the TV itself) which apps are running. -->
     <access origin="*" subdomains="true"/>
     <tizen:application id="skylightTV.Skylight" package="skylightTV" required_version="3.0"/>

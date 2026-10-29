@@ -732,11 +732,17 @@ async function runAll() {
 
       await call('Runtime.enable');
 
-      const r1 = await call('Runtime.evaluate', {
-        expression: `document.getElementById('screen').className`,
-        returnByValue: true
-      });
-      assert.ok(r1.result.value.indexOf('weather-rain') !== -1, `Live browser must have weather-rain class (got: ${r1.result.value})`);
+      let r1Val = '';
+      for (let attempt = 0; attempt < 25; attempt++) {
+        const rCheck = await call('Runtime.evaluate', {
+          expression: `document.getElementById('screen') ? document.getElementById('screen').className : ''`,
+          returnByValue: true
+        });
+        r1Val = (rCheck && rCheck.result) ? rCheck.result.value : '';
+        if (r1Val && r1Val.indexOf('weather-rain') !== -1) break;
+        await new Promise(r => setTimeout(r, 100));
+      }
+      assert.ok(r1Val.indexOf('weather-rain') !== -1, `Live browser must have weather-rain class (got: ${r1Val})`);
 
       await call('Runtime.evaluate', {
         expression: `window.Scenery.setWeatherMode('thunder')`

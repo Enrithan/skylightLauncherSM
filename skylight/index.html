@@ -62,6 +62,20 @@
       <div class="ripple" style="left: 1610px; top: 600px;"></div>
       <div class="ripple ripple--two" style="left: 1700px; top: 660px;"></div>
       <svg class="ridges" viewBox="0 0 1920 160" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="gradRidgeFar" x1="0" y1="0" x2="0" y2="1">
+            <stop id="stopRidgeFar0" offset="0%" stop-color="var(--ridge-far-top, var(--ridge-far))"/>
+            <stop id="stopRidgeFar1" offset="100%" stop-color="var(--ridge-far)"/>
+          </linearGradient>
+          <linearGradient id="gradRidgeMid" x1="0" y1="0" x2="0" y2="1">
+            <stop id="stopRidgeMid0" offset="0%" stop-color="var(--ridge-mid-top, var(--ridge-mid))"/>
+            <stop id="stopRidgeMid1" offset="100%" stop-color="var(--ridge-mid)"/>
+          </linearGradient>
+          <linearGradient id="gradRidgeNear" x1="0" y1="0" x2="0" y2="1">
+            <stop id="stopRidgeNear0" offset="0%" stop-color="var(--ridge-near-top, var(--ridge-near))"/>
+            <stop id="stopRidgeNear1" offset="100%" stop-color="var(--ridge-near)"/>
+          </linearGradient>
+        </defs>
         <path id="ridgeFar" class="ridge ridge--far" d="M0 92C110 74 190 60 280 63C350 65 410 50 470 30C500 20 520 12 540 14C565 16 600 40 650 52C720 68 800 60 880 56C960 52 1020 66 1100 70C1180 74 1250 62 1330 52C1400 42 1460 22 1520 10C1540 6 1555 6 1572 12C1610 26 1660 52 1720 60C1800 70 1870 66 1920 62V160H0Z"/>
         <path id="ridgeMid" class="ridge ridge--mid" d="M0 108C80 100 150 88 230 90C310 92 360 106 440 104C520 102 590 82 680 80C770 78 830 98 920 100C1010 102 1080 86 1170 84C1260 82 1330 100 1420 102C1510 104 1580 90 1670 88C1760 86 1840 96 1920 98V160H0Z"/>
         <path class="ridge ridge--near" d="M0 132C50 128 90 122 140 124C190 126 220 134 280 133C350 132 390 120 450 121C510 122 560 134 630 134C700 134 740 126 810 126C880 126 930 136 1000 136C1070 136 1120 124 1190 124C1260 124 1300 135 1370 135C1440 135 1490 123 1560 123C1630 123 1680 133 1750 133C1820 133 1870 128 1920 127V160H0Z"/>

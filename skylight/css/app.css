@@ -134,8 +134,8 @@ body {
   right: -3%;
   will-change: transform;
 }
-.clouds--wisps { animation: cloud-drift 260s ease-in-out infinite alternate; }
-.clouds--puffs { animation: cloud-drift 340s ease-in-out -120s infinite alternate-reverse; }
+.clouds--wisps { animation: cloud-drift 52s ease-in-out infinite alternate; }
+.clouds--puffs { animation: cloud-drift 68s ease-in-out -20s infinite alternate-reverse; }
 
 .clouds--wisps {
   background:
@@ -247,6 +247,8 @@ body {
   margin: -58px 0 0 -58px;
   background: radial-gradient(circle at 50% 50%, #fffdf7 0%, #fff5dc 46%, #ffe0a2 76%, #ffd18a 100%);
   box-shadow: 0 0 34px 10px rgba(255, 236, 196, 0.7);
+  animation: celestial-pulse 14s ease-in-out infinite alternate;
+  will-change: transform, opacity;
 }
 
 /* The anamorphic streak a camera lens draws through a low sun. */
@@ -296,6 +298,8 @@ body {
   margin: -50px 0 0 -50px;
   border-radius: 50%;
   overflow: hidden;
+  animation: celestial-pulse 16s ease-in-out infinite alternate;
+  will-change: transform, opacity;
   background:
     radial-gradient(circle at 34% 30%, rgba(150, 146, 132, 0.45) 0%, transparent 15%),
     radial-gradient(circle at 58% 42%, rgba(150, 146, 132, 0.4) 0%, transparent 17%),
@@ -358,6 +362,18 @@ body {
     linear-gradient(180deg, var(--lake-top) 0%, var(--floor) 46%);
   transition: background 1.2s ease;
 }
+.lake::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
+  background: radial-gradient(ellipse 60% 40% at 50% 10%, rgba(255, 255, 255, 0.04), transparent 80%);
+  animation: lake-water-breathe 28s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
 
 /* The path of light on the water: two random dash textures crossfading make it shimmer. */
 .glitter {
@@ -404,9 +420,9 @@ body {
 }
 /* The light catches the ridgelines, most at sunrise and sunset. */
 .ridge { transition: fill 1.2s ease, stroke 1.2s ease, stroke-opacity 1.2s ease, stroke-width 1.2s ease, opacity 1.2s ease; }
-.ridge--far { fill: var(--ridge-far); stroke: var(--glare); stroke-opacity: var(--rim); stroke-width: 1.6; }
-.ridge--mid { fill: var(--ridge-mid); stroke: var(--glare); stroke-opacity: calc(var(--rim) * 0.6); stroke-width: 1.2; }
-.ridge--near { fill: var(--ridge-near); }
+.ridge--far { fill: url(#gradRidgeFar); stroke: var(--glare); stroke-opacity: var(--rim); stroke-width: 1.6; }
+.ridge--mid { fill: url(#gradRidgeMid); stroke: var(--glare); stroke-opacity: calc(var(--rim) * 0.6); stroke-width: 1.2; }
+.ridge--near { fill: url(#gradRidgeNear); }
 
 .ridges--reflection {
   top: 516px;
@@ -502,8 +518,8 @@ body {
 /* Morning mist lying on the lake. */
 .mist {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: -5%;
+  right: -5%;
   top: 498px;
   height: 110px;
   opacity: var(--mist);
@@ -512,6 +528,8 @@ body {
     radial-gradient(ellipse 34% 60% at 55% 55%, rgba(255, 255, 255, 0.12), transparent 70%),
     radial-gradient(ellipse 28% 60% at 86% 45%, rgba(255, 255, 255, 0.13), transparent 70%),
     linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.10) 35%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0) 100%);
+  animation: ambient-mist-drift 38s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Fireflies over the water at dusk and night: a handful of tiny lights that drift and blink. */
@@ -1089,6 +1107,18 @@ body {
 @keyframes shine { from { transform: translateX(-140%); } to { transform: translateX(140%); } }
 @keyframes twinkle { from { opacity: 0.25; } to { opacity: 1; } }
 @keyframes cloud-drift { from { transform: translate3d(-1.6%, 0, 0); } to { transform: translate3d(1.6%, 0, 0); } }
+@keyframes celestial-pulse {
+  0% { transform: scale(0.98); opacity: 0.94; }
+  100% { transform: scale(1.02); opacity: 1; }
+}
+@keyframes ambient-mist-drift {
+  from { transform: translate3d(-18px, 0, 0); }
+  to { transform: translate3d(18px, 0, 0); }
+}
+@keyframes lake-water-breathe {
+  0% { transform: translate3d(-15px, 0, 0); opacity: 0.6; }
+  100% { transform: translate3d(15px, 0, 0); opacity: 1; }
+}
 @keyframes turn { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes breathe { from { transform: scale(0.96); opacity: 0.85; } to { transform: scale(1.05); opacity: 1; } }
 @keyframes sway { from { transform: translate3d(-7px, 0, 0); } to { transform: translate3d(7px, 0, 0); } }

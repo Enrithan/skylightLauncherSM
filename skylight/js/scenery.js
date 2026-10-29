@@ -368,11 +368,34 @@ window.Scenery = (function () {
     root.setProperty('--mist', mist.toFixed(3));
     root.setProperty('--godrays', godrays.toFixed(3));
     // Mountains fade into the haze with distance; the lake mirrors the horizon, darkened.
-    root.setProperty('--ridge-far', mix(low, mid, 0.45));
-    root.setProperty('--ridge-mid', mix(mid, floor, 0.38));
-    root.setProperty('--ridge-near', mix(mid, floor, 0.78));
+    var rFar = mix(low, mid, 0.45);
+    var rMid = mix(mid, floor, 0.38);
+    var rNear = mix(mid, floor, 0.78);
+    var rFarTop = mix(low, mid, 0.22);
+    var rMidTop = mix(mid, floor, 0.20);
+    var rNearTop = mix(mid, floor, 0.58);
+
+    root.setProperty('--ridge-far', rFar);
+    root.setProperty('--ridge-mid', rMid);
+    root.setProperty('--ridge-near', rNear);
+    root.setProperty('--ridge-far-top', rFarTop);
+    root.setProperty('--ridge-mid-top', rMidTop);
+    root.setProperty('--ridge-near-top', rNearTop);
     root.setProperty('--pines', mix(floor, '#000000', 0.5));
     root.setProperty('--lake-top', mix(low, floor, 0.55));
+
+    var sFar0 = byId('stopRidgeFar0');
+    if (sFar0) sFar0.setAttribute('stop-color', rFarTop);
+    var sFar1 = byId('stopRidgeFar1');
+    if (sFar1) sFar1.setAttribute('stop-color', rFar);
+    var sMid0 = byId('stopRidgeMid0');
+    if (sMid0) sMid0.setAttribute('stop-color', rMidTop);
+    var sMid1 = byId('stopRidgeMid1');
+    if (sMid1) sMid1.setAttribute('stop-color', rMid);
+    var sNear0 = byId('stopRidgeNear0');
+    if (sNear0) sNear0.setAttribute('stop-color', rNearTop);
+    var sNear1 = byId('stopRidgeNear1');
+    if (sNear1) sNear1.setAttribute('stop-color', rNear);
     screen.classList.toggle('is-night', stars >= 0.5);
     // The animated layers only run when they can be seen.
     screen.classList.toggle('has-aurora', aurora > 0.05);
