@@ -9,6 +9,7 @@
   var VIEW_WIDTH = 1920 - 2 * EDGE;
   var HIDDEN_TILE = '__hidden__';
   var SAMSUNG_TILE = '__samsung__';
+  var CLEAN_TILE = '__cleanup__';
   var HELPER_ID = 'skylightTV.SkylightWatch'; // the background helper in service/index.js
   var DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
@@ -170,6 +171,8 @@
     if (known && known.always) return true;
     if (app.show === false) return false;
     if (/service$/i.test(app.id)) return false; // background helpers, not apps to open
+    if (/extension|cms|helper|daemon|provider|privacy|register|account/i.test(app.id)) return false;
+    if (/extension|cms|helper|daemon|provider|privacy|register|account/i.test(app.name)) return false;
     return !!known || /^[A-Za-z0-9]{10}\./.test(app.id);
   }
 
@@ -198,6 +201,18 @@
 
     var strangers = apps.filter(function (app) { return !catalog.apps[app.id]; });
     if (strangers.length) note('also showing: ' + strangers.map(function (a) { return a.id + ' (' + a.name + ')'; }).join(', '));
+
+    rows[1].items.push({
+      id: CLEAN_TILE,
+      name: 'Clean RAM',
+      note: 'Close resident background apps and free memory',
+      icon: 'icons/clean.svg',
+      tvIcon: '',
+      tile: '#047857',
+      ink: '#FFFFFF',
+      glow: '#10B981',
+      special: true
+    });
 
     rows[1].items.push({
       id: SAMSUNG_TILE,
@@ -249,6 +264,7 @@
 
   function render() {
     var focusedId = currentApp() ? currentApp().id : '';
+    focusedApp = null;
 
     rows.forEach(function (row) {
       row.el.innerHTML = '';
@@ -278,6 +294,9 @@
     el.style.setProperty('--tile-c', mix(app.tile, '#000000', 0.4));
     el.style.setProperty('--ink', app.ink);
     el.style.setProperty('--shadow', rgba(app.glow, 0.5));
+    el.style.setProperty('--glow-intense', rgba(app.glow, 0.85));
+    el.style.setProperty('--glow-ambient', rgba(app.glow, 0.55));
+    el.style.setProperty('--glow-diffuse', rgba(app.glow, 0.30));
     el.style.setProperty('--i', String(index));
 
     var src = app.icon || (app.tvIcon ? (/^[a-z]+:/i.test(app.tvIcon) ? app.tvIcon : 'file://' + app.tvIcon) : '');
@@ -294,6 +313,12 @@
     }
 
     app.el = el;
+    el.addEventListener('click', function () {
+      focus.row = rows[0].items.indexOf(app) >= 0 ? 0 : 1;
+      focus.col = rows[focus.row].items.indexOf(app);
+      paintFocus();
+      activate(app);
+    });
     return el;
   }
 
@@ -324,19 +349,20 @@
     return row ? row.items[focus.col] : null;
   }
 
-  function paintFocus(instant) {
-    rows.forEach(function (row, r) {
-      row.items.forEach(function (app, c) {
-        var here = r === focus.row && c === focus.col;
-        app.el.classList.toggle('is-focused', here && !moving);
-        app.el.classList.toggle('is-moving', here && !!moving);
-      });
-    });
+  var focusedApp = null;
 
+  function paintFocus(instant) {
     var app = currentApp();
     if (!app) return;
+
+    if (focusedApp && focusedApp !== app) {
+      focusedApp.el.classList.remove('is-focused', 'is-moving');
+    }
+    app.el.classList.toggle('is-focused', !moving);
+    app.el.classList.toggle('is-moving', !!moving);
+    focusedApp = app;
+
     scrollRow(focus.row);
-    moveGlow(app, instant);
     showCaption(app);
   }
 
@@ -350,7 +376,6 @@
     }
     if (captionTitle.textContent !== app.name) {
       captionTitle.textContent = app.name;
-      restart(captionTitle, 'is-fresh');
     }
     captionNote.textContent = app.note || lastOpened(app.id);
     hint.classList.toggle('is-hidden', hintSeen || !!app.special);
@@ -359,7 +384,6 @@
   // Re-runs a one-shot CSS animation by taking the class off and putting it back.
   function restart(el, className) {
     el.classList.remove(className);
-    void el.offsetWidth;
     el.classList.add(className);
   }
 
@@ -375,17 +399,17 @@
     return days === 1 ? 'Opened yesterday' : 'Opened ' + days + ' days ago';
   }
 
-  // Slides a row sideways so the selected app stays on screen. Tiles past the edge just peek in,
-  // which shows there is more to the right.
+  // Slides a row sideways so the selected app stays on screen using constant step math.
   function scrollRow(index) {
     var row = rows[index];
-    var app = index === focus.row ? row.items[focus.col] : null;
-    if (app) {
-      var left = app.el.offsetLeft;
-      var right = left + app.el.offsetWidth;
-      if (right - row.shift > VIEW_WIDTH) row.shift = right - VIEW_WIDTH + 30;
-      if (left - row.shift < 0) row.shift = Math.max(0, left - 30);
-    }
+    var col = (index === focus.row) ? focus.col : 0;
+    var step = (index === 0) ? 174 : 124;
+    var tileWidth = (index === 0) ? 154 : 108;
+
+    var left = col * step;
+    var right = left + tileWidth;
+    if (right - row.shift > VIEW_WIDTH) row.shift = right - VIEW_WIDTH + 40;
+    if (left - row.shift < 0) row.shift = Math.max(0, left - 40);
     row.el.style.transform = 'translate3d(' + (-row.shift) + 'px, 0, 0)';
   }
 
@@ -402,34 +426,7 @@
   }
 
   function moveGlow(app, instant) {
-    var at = centreOf(app.el);
-    // Centred a little below the tile, so the light falls on the water rather than into the sky.
-    var transform = 'translate3d(' + Math.round(at.x) + 'px, ' + Math.round(at.y + 56) + 'px, 0)';
-    var level = focus.row === 0 ? 'is-on' : 'is-dim';
-
-    if (app.glow !== glowColour) {
-      var outgoing = glows[glowIndex];
-      glowIndex = 1 - glowIndex;
-      var incoming = glows[glowIndex];
-      // Start the new colour where the old light is, so it glides over rather than flying in.
-      incoming.style.transition = 'none';
-      incoming.style.transform = outgoing.style.transform || transform;
-      incoming.style.setProperty('--c', app.glow);
-      incoming.style.setProperty('--c0', rgba(app.glow, 0));
-      void incoming.offsetWidth;
-      incoming.style.transition = '';
-      outgoing.classList.remove('is-on', 'is-dim');
-      glowColour = app.glow;
-    }
-
-    glows.forEach(function (layer) {
-      if (instant) layer.style.transition = 'none';
-      layer.style.transform = transform;
-      if (instant) { void layer.offsetWidth; layer.style.transition = ''; }
-    });
-    var lit = glows[glowIndex];
-    lit.classList.remove(level === 'is-on' ? 'is-dim' : 'is-on');
-    lit.classList.add(level);
+    // Disabled on low-power TV/projector GPU for instant response
   }
 
   // ---- Remote --------------------------------------------------------------------------------
@@ -440,9 +437,13 @@
     if (dRow) {
       var target = focus.row + dRow;
       if (target < 0 || target >= rows.length || !rows[target].items.length) return;
-      var x = centreOf(currentApp().el).x;
+      var curStep = focus.row === 0 ? 174 : 124;
+      var tgtStep = target === 0 ? 174 : 124;
+      var curTileCenter = focus.col * curStep + curStep / 2 - rows[focus.row].shift;
+      var tgtTargetX = curTileCenter + rows[target].shift;
+      var bestCol = Math.round((tgtTargetX - tgtStep / 2) / tgtStep);
       focus.row = target;
-      focus.col = nearestCol(rows[target], x);
+      focus.col = Math.max(0, Math.min(rows[target].items.length - 1, bestCol));
     } else {
       var next = focus.col + dCol;
       if (next < 0 || next >= rows[focus.row].items.length) return;
@@ -461,6 +462,14 @@
     return best;
   }
 
+  function isEnterKey(code) {
+    return code === 13 || code === 65379 || code === 10252 || code === 10182;
+  }
+
+  function isBackKey(code) {
+    return code === 10009 || code === 27 || code === 8 || code === 461;
+  }
+
   document.addEventListener('keydown', function (e) {
     if (launching) { e.preventDefault(); return; }
     // Up has nothing to do on the top row, so three in a row opens the diagnostics.
@@ -469,24 +478,29 @@
     } else {
       upPresses = 0;
     }
+
+    if (isEnterKey(e.keyCode)) {
+      if (!enterIsDown) {
+        enterIsDown = true;
+        holdFired = false;
+        if (!moving && !menu) holdTimer = setTimeout(function () { holdFired = true; openMenu(); }, HOLD_MS);
+      }
+      e.preventDefault();
+      return;
+    }
+
+    if (isBackKey(e.keyCode)) {
+      if (menu) closeMenu();
+      else if (moving) cancelMoving();
+      e.preventDefault();
+      return;
+    }
+
     switch (e.keyCode) {
       case KEY.LEFT: step(0, -1); break;
       case KEY.RIGHT: step(0, 1); break;
       case KEY.UP: step(-1, 0); break;
       case KEY.DOWN: step(1, 0); break;
-      case KEY.ENTER:
-        if (!enterIsDown) {
-          enterIsDown = true;
-          holdFired = false;
-          if (!moving && !menu) holdTimer = setTimeout(function () { holdFired = true; openMenu(); }, HOLD_MS);
-        }
-        break;
-      case KEY.BACK:
-      case KEY.ESCAPE:
-        // This is the home screen, so Back only closes the menu or cancels a move.
-        if (menu) closeMenu();
-        else if (moving) cancelMoving();
-        break;
       default:
         return;
     }
@@ -495,7 +509,7 @@
 
   // Apps open on release, so holding OK can bring up the menu instead.
   document.addEventListener('keyup', function (e) {
-    if (e.keyCode !== KEY.ENTER || !enterIsDown) return;
+    if (!isEnterKey(e.keyCode) || !enterIsDown) return;
     enterIsDown = false;
     clearTimeout(holdTimer);
     e.preventDefault();
@@ -509,6 +523,7 @@
     if (!app) return;
     if (app.id === HIDDEN_TILE) unhideAll();
     else if (app.id === SAMSUNG_TILE) letSamsungStay();
+    else if (app.id === CLEAN_TILE) cleanRam();
     else open(app);
   }
 
@@ -519,21 +534,27 @@
     captionNote.textContent = 'Press Home on the remote. Samsung’s screen will stay for 3 minutes.';
   }
 
-  var helperChecks = 0;
+  function cleanRam() {
+    captionTitle.textContent = 'Clean RAM';
+    captionNote.textContent = 'Closing resident background apps and freeing memory...';
+    helperGet('cleanup', function (text) {
+      try {
+        var res = JSON.parse(text);
+        captionTitle.textContent = 'RAM Cleaned';
+        captionNote.textContent = 'Freed ' + (res.ramFreedMB || 0) + ' MB RAM (Closed ' + (res.closedApps ? res.closedApps.length : 0) + ' apps) \u2022 ' + (res.ramFreeMB || 0) + ' MB free';
+      } catch (e) {
+        captionTitle.textContent = 'Clean RAM';
+        captionNote.textContent = 'Cleanup completed';
+      }
+      setTimeout(function () { updateCaption(); }, 4000);
+    });
+  }
 
   function tellHelperToGuard() {
     var shown = [];
     rows.forEach(function (row) { row.items.forEach(function (it) { if (!it.special) shown.push(it.id); }); });
     tellHelper({ cmd: 'guard', shown: shown.join(',') },
       null, function (err) { note('helper would not start (' + (err && err.name) + ')'); });
-    // A few seconds later, make sure it is actually up; ask again a couple of times if not.
-    setTimeout(function () {
-      helperGet('log', function (text) {
-        if (text) { if (!helperChecks) note('helper is up'); helperChecks = 0; return; }
-        if (++helperChecks <= 3) { note('helper not reachable yet; asking it to start again (' + helperChecks + ')'); tellHelperToGuard(); }
-        else note('helper is not running; Skylight handles returns by itself');
-      });
-    }, 5000);
   }
 
   // ---- Hold-OK menu: move or hide ------------------------------------------------------------
@@ -657,9 +678,10 @@
     curtain.classList.add('is-on');
     setTimeout(function () {
       launchInGroup(app.id, function () {
-        // Both the helper and this page watch; whichever notices first brings Skylight back.
+        // The helper watches (its own process, every few seconds). The page only watches itself
+        // if the helper can't be reached, so the two don't both poll the TV.
         askHelper(app);
-        startWatching(app);
+        helperGet('log', function (text) { if (text === null) startWatching(app); });
         // The TV hides this page once the app is up; if it never does, uncover after a while.
         setTimeout(function () { if (!document.hidden) uncover(); }, 6000);
       }, function () { uncover(); showLaunchError(app); });
@@ -928,6 +950,75 @@
     captionNote.classList.add('is-error');
   }
 
+  // ---- Calendar & Schedule -------------------------------------------------------------------
+  var calendarEventsEl = byId('calendarEvents');
+  var lastCalendarCheck = 0;
+
+  function updateCalendarDisplay(events) {
+    if (!calendarEventsEl) return;
+    calendarEventsEl.innerHTML = '';
+    if (!events || !events.length) return;
+
+    events.slice(0, 3).forEach(function (ev) {
+      var item = document.createElement('div');
+      item.className = 'calendar-event';
+
+      var timeSpan = document.createElement('span');
+      timeSpan.className = 'calendar-event-time';
+      timeSpan.textContent = ev.time || 'All day';
+
+      var titleSpan = document.createElement('span');
+      titleSpan.className = 'calendar-event-title';
+      titleSpan.textContent = ev.title;
+
+      item.appendChild(timeSpan);
+      item.appendChild(titleSpan);
+      calendarEventsEl.appendChild(item);
+    });
+  }
+
+  // Instantly render previously cached events in 0 ms at startup
+  try {
+    var cachedEv = JSON.parse(load('cachedEvents') || '[]');
+    if (cachedEv.length) updateCalendarDisplay(cachedEv);
+  } catch (e) {}
+
+  function fetchCalendarEvents() {
+    lastCalendarCheck = Date.now();
+    helperGet('calendar', function (data) {
+      if (!data) return;
+      try {
+        var parsed = JSON.parse(data);
+        if (Array.isArray(parsed.events)) {
+          save('cachedEvents', JSON.stringify(parsed.events));
+          updateCalendarDisplay(parsed.events);
+        }
+      } catch (e) {}
+    });
+  }
+
+  // ---- Live Weather --------------------------------------------------------------------------
+  var lastWeatherCheck = 0;
+
+  try {
+    var cachedW = JSON.parse(load('cachedWeather') || 'null');
+    if (cachedW) Scenery.setWeather(cachedW);
+  } catch (e) {}
+
+  function fetchWeather() {
+    lastWeatherCheck = Date.now();
+    helperGet('weather', function (data) {
+      if (!data) return;
+      try {
+        var parsed = JSON.parse(data);
+        if (parsed && parsed.weather) {
+          save('cachedWeather', JSON.stringify(parsed.weather));
+          Scenery.setWeather(parsed.weather);
+        }
+      } catch (e) {}
+    });
+  }
+
   // ---- Clock ---------------------------------------------------------------------------------
 
   function tick() {
@@ -944,6 +1035,12 @@
     byId('date').textContent = DAYS[now.getDay()] + ' ' + now.getDate() + ' ' + MONTHS[now.getMonth()];
     Scenery.update(now);
     if (currentApp() && !moving) showCaption(currentApp());
+    if (Date.now() - lastCalendarCheck > 300000) {
+      fetchCalendarEvents();
+    }
+    if (Date.now() - lastWeatherCheck > 1800000) {
+      fetchWeather();
+    }
     clearTimeout(tickTimer);
     tickTimer = setTimeout(tick, 60000 - now.getSeconds() * 1000 - now.getMilliseconds() + 50);
   }
@@ -968,17 +1065,32 @@
   }
 
   function refreshApps(first) {
+    if (first) {
+      var cached = load('installedApps');
+      if (cached) {
+        try {
+          installed = JSON.parse(cached);
+          installedKey = installed.map(function (a) { return a.id; }).sort().join('|');
+        } catch (e) { installed = null; }
+      }
+      buildRows();
+      render();
+      reveal();
+    }
     readInstalled(function (apps) {
-      var key = apps ? apps.map(function (a) { return a.id; }).sort().join('|') : 'catalog';
-      if (!first && key === installedKey) return;
+      if (!apps) return;
+      var key = apps.map(function (a) { return a.id; }).sort().join('|');
+      if (key === installedKey) {
+        tellHelperToGuard();
+        return;
+      }
       installedKey = key;
       installed = apps;
+      save('installedApps', JSON.stringify(apps.map(function (a) { return { id: a.id, name: a.name, iconPath: a.iconPath }; })));
       buildRows();
       render();
       tellHelperToGuard();
-      if (!first) return;
-      if (document.hidden) revealPending = true;
-      else reveal();
+      reveal();
     });
   }
 
@@ -990,7 +1102,8 @@
     if (menu) closeMenu();
     tick();
     if (revealPending) reveal();
-    refreshApps(false);
+    fetchCalendarEvents();
+    fetchWeather();
   }
 
   // Losing the screen without having opened anything means the Home button (or standby). Samsung's
@@ -1005,17 +1118,18 @@
   // A long gap between ticks means the TV was in standby and has just woken up.
   setInterval(function () {
     var now = Date.now();
-    if (now - lastTick > 20000) { wokeAt = now; note('the TV woke up'); if (document.hidden && !launching && !watch) scheduleHomeCheck(1); }
+    if (now - lastTick > 20000) { wokeAt = now; note('the TV woke up'); }
     lastTick = now;
-  }, 1000);
+  }, 5000);
 
   document.addEventListener('visibilitychange', function () {
     if (!document.hidden) { resume(); return; }
     if (launching || watch) return; // an app we opened took the screen; the watcher handles it
     hiddenAt = Date.now();
-    helperGet('away', function () {});
     note('left the screen without opening anything (Home, or standby)');
-    scheduleHomeCheck(1);
+    // The helper decides (it only replaces Samsung's home). Fall back to our own check only if
+    // the helper isn't answering.
+    helperGet('away', function (text) { if (text === null) scheduleHomeCheck(1); });
   });
 
   function scheduleHomeCheck(attempt) {
@@ -1046,5 +1160,9 @@
   Scenery.init({ lean: (!!window.tizen && !window.SKYLIGHT_PREVIEW) || /[?&]lean\b/.test(location.search) });
   tick();
   refreshApps(true);
+  tellHelperToGuard();
+  setTimeout(fetchCalendarEvents, 1200);
+  setTimeout(fetchWeather, 2000);
   note('Skylight ' + version + ' started');
+  try { window.focus(); } catch (e) {}
 })();

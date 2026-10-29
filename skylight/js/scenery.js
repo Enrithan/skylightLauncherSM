@@ -187,6 +187,7 @@ window.Scenery = (function () {
   // Two textures of short bright dashes, narrow near the shore and wider toward the viewer, like
   // light breaking on small waves. They crossfade in CSS to shimmer.
   function paintGlitter(colour) {
+    if (lean) return;
     var c = rgb(colour).join(', ');
     glitterLayers.forEach(function (layer, n) {
       try {
@@ -329,17 +330,64 @@ window.Scenery = (function () {
     return (h % 12 || 12) + ':' + (m < 10 ? '0' + m : m) + (h < 12 ? ' am' : ' pm');
   }
 
-  // The quiet line under the date: what the sky is doing.
+  var liveWeather = null;
+
+  function weatherEmoji(desc) {
+    var d = (desc || '').toLowerCase();
+    if (d.indexOf('sun') > -1 || d.indexOf('clear') > -1) return '☀️';
+    if (d.indexOf('partly') > -1) return '⛅';
+    if (d.indexOf('cloud') > -1 || d.indexOf('overcast') > -1) return '☁️';
+    if (d.indexOf('rain') > -1 || d.indexOf('drizzle') > -1 || d.indexOf('shower') > -1) return '🌧️';
+    if (d.indexOf('thunder') > -1 || d.indexOf('storm') > -1) return '🌩️';
+    if (d.indexOf('snow') > -1 || d.indexOf('blizzard') > -1 || d.indexOf('ice') > -1) return '🌨️';
+    if (d.indexOf('fog') > -1 || d.indexOf('mist') > -1 || d.indexOf('haze') > -1) return '🌫️';
+    return '🌡️';
+  }
+
+  function formatAstroTime(t) {
+    if (!t) return '';
+    return t.replace(/^0/, '').toLowerCase();
+  }
+
+  function parseAstroHours(str, fallback) {
+    if (!str) return fallback;
+    var m = str.match(/(\d+):(\d+)\s*(AM|PM)?/i);
+    if (!m) return fallback;
+    var h = parseInt(m[1], 10);
+    var min = parseInt(m[2], 10);
+    var ampm = (m[3] || '').toUpperCase();
+    if (ampm === 'PM' && h < 12) h += 12;
+    if (ampm === 'AM' && h === 12) h = 0;
+    return h + min / 60;
+  }
+
+  // The quiet line under the date: real weather and sunrise/sunset, or moon phase fallback.
   function writeDetail(now, sunUp) {
+    if (liveWeather && typeof liveWeather.tempC === 'number') {
+      var icon = weatherEmoji(liveWeather.desc);
+      var condition = liveWeather.desc || 'Clear';
+      var astro = sunUp ? ('Sunset ' + formatAstroTime(liveWeather.sunset)) : ('Sunrise ' + formatAstroTime(liveWeather.sunrise));
+      detail.textContent = icon + ' ' + liveWeather.tempC + '°C ' + condition + '  ·  ' + astro;
+      return;
+    }
     var name = MOON_NAMES[Math.round(moonPhase(now) * 8) % 8];
     detail.textContent = sunUp ? 'Sunset ' + clock(SUNSET) + '  ·  ' + name
       : name + '  ·  Sunrise ' + clock(SUNRISE);
   }
 
+  function setWeather(w) {
+    liveWeather = w;
+    if (w && w.sunrise) SUNRISE = parseAstroHours(w.sunrise, SUNRISE);
+    if (w && w.sunset) SUNSET = parseAstroHours(w.sunset, SUNSET);
+    if (detail && live) {
+      placeBodies(new Date());
+    }
+  }
+
   // ---- Visitors: birds by day, shooting stars by night ---------------------------------------
 
   function scheduleVisitors(kind) {
-    if (kind === visitorsFor) return;
+    if (lean || kind === visitorsFor) return;
     visitorsFor = kind;
     // `?visitors` (desktop preview only) sends them straight away so they can be checked.
     var soon = /[?&]visitors\b/.test(location.search);
@@ -378,6 +426,18 @@ window.Scenery = (function () {
     meteorTimer = setTimeout(sendMeteor, 50000 + Math.random() * 70000);
   }
 
+  function sprinkleStarsLean() {
+    var random = seeded(20251026);
+    var dots = [];
+    for (var i = 0; i < 40; i++) {
+      var x = Math.round(random() * 1920);
+      var y = Math.round(random() * 450);
+      var alpha = (0.2 + random() * 0.5).toFixed(2);
+      dots.push(x + 'px ' + y + 'px 0 rgba(255, 255, 255, ' + alpha + ')');
+    }
+    byId('stars').style.boxShadow = dots.join(', ');
+  }
+
   // ---- Public --------------------------------------------------------------------------------
 
   function init(options) {
@@ -395,9 +455,14 @@ window.Scenery = (function () {
     birds = byId('birds');
     meteor = byId('meteor');
     detail = byId('detail');
-    ghosts = makeGhosts();
-    sprinkleStars();
-    makeGrain();
+    if (!lean) {
+      ghosts = makeGhosts();
+      sprinkleStars();
+      makeGrain();
+    } else {
+      ghosts = [];
+      sprinkleStarsLean();
+    }
   }
 
   var live = false;
@@ -421,5 +486,5 @@ window.Scenery = (function () {
     placeBodies(now);
   }
 
-  return { init: init, update: update };
+  return { init: init, update: update, setWeather: setWeather };
 })();

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#091b3e"/>
+      <stop offset="100%" stop-color="#040918"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#fff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="30" fill="url(#bg)"/>
+  <!-- Glowing star arc -->
+  <path d="M 28 108 Q 96 38 164 100" fill="none" stroke="url(#arc)" stroke-width="4.5" stroke-linecap="round"/>
+  <!-- Disney script style D + plus -->
+  <text x="82" y="118" font-family="'Fraunces', Georgia, serif" font-size="78" font-weight="900" font-style="italic" fill="#ffffff" text-anchor="middle">Disney</text>
+  <path d="M 148 76 v 18 h 18 v 6 h -18 v 18 h -6 v -18 h -18 v -6 h 18 v -18 z" fill="#4488ff"/>
+</svg>

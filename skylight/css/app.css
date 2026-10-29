@@ -2,13 +2,13 @@
   font-family: 'Fraunces';
   src: url('../fonts/fraunces.woff2') format('woff2');
   font-weight: 100 900;
-  font-display: block;
+  font-display: swap;
 }
 @font-face {
   font-family: 'Atkinson';
   src: url('../fonts/atkinson.woff2') format('woff2');
   font-weight: 200 800;
-  font-display: block;
+  font-display: swap;
 }
 
 /* Scenery colours are set from app.js for the time of day; these are the night values. */
@@ -570,7 +570,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 320ms linear;
 }
 .is-ready .stage { opacity: 1; }
@@ -579,11 +579,11 @@ body {
   position: absolute;
   left: var(--edge);
   right: var(--edge);
-  top: 74px;
+  top: 60px;
 }
 
 .greeting {
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 500;
   color: var(--muted);
 }
@@ -591,78 +591,130 @@ body {
 .clock {
   margin-top: 2px;
   font-family: 'Fraunces', serif;
-  font-size: 236px;
+  font-size: 172px;
   font-weight: 320;
   line-height: 0.9;
   letter-spacing: -0.035em;
   font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 0;
   font-feature-settings: 'lnum' 1, 'tnum' 1;
-  text-shadow: 0 6px 40px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }
 
 .meridiem {
-  margin-left: 22px;
+  margin-left: 18px;
   font-family: 'Atkinson', sans-serif;
-  font-size: 44px;
+  font-size: 36px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--muted);
   text-shadow: none;
 }
 
-.date {
+.calendar-panel {
   position: absolute;
   right: 0;
-  top: 2px;
-  font-size: 40px;
+  top: 4px;
+  text-align: right;
+  max-width: 520px;
+}
+
+.date {
+  font-size: 36px;
   font-weight: 500;
   color: var(--muted);
 }
 
 /* What the sky is doing: moon phase and the next sunrise or sunset. */
 .detail {
-  position: absolute;
-  right: 0;
-  top: 58px;
-  font-size: 26px;
+  margin-top: 4px;
+  font-size: 22px;
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--faint);
 }
 
-/* ---- Rows of apps ---- */
+.calendar-events {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.calendar-event {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.68);
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  padding: 6px 14px;
+  border-radius: 12px;
+  color: var(--paper);
+}
+
+.calendar-event-time {
+  color: #60a5fa;
+  font-weight: 600;
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.calendar-event-title {
+  font-size: 19px;
+  font-weight: 500;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Rows of apps (Compact Sizing) ---- */
 
 .row {
   position: absolute;
   left: var(--edge);
   display: flex;
-  transition: transform 340ms var(--ease-out);
+  transition: transform 90ms cubic-bezier(0, 0, 0.2, 1);
+  will-change: transform;
+  transform: translateZ(0);
 }
-.row--big { top: 510px; }
-.row--small { top: 878px; }
+.row--big { top: 540px; }
+.row--small { top: 825px; }
 
-/* The big tiles are mirrored faintly in the lake below them (not in lean mode: the reflection
-   is re-rendered every frame the row moves, which the TV can't afford). */
-.screen:not(.lean) .row--big {
-  -webkit-box-reflect: below 12px linear-gradient(rgba(0, 0, 0, 0) 58%, rgba(0, 0, 0, 0.26) 100%);
+/* The big tiles are mirrored faintly in the lake below them (disabled for low-power GPU) */
+.row--big, .screen:not(.lean) .row--big {
+  -webkit-box-reflect: none !important;
+}
+
+/* In lean mode on low-power TV/projector hardware, disable expensive continuous background animations */
+.screen.lean .fireflies,
+.screen.lean .twinkles,
+.screen.lean .grain,
+.screen.lean .glare-rays,
+.screen.lean .ripple,
+.screen.lean .aurora {
+  display: none !important;
+  animation: none !important;
 }
 
 .tile {
   position: relative;
   flex: 0 0 auto;
-  overflow: hidden;
-  border-radius: 22px;
+  overflow: visible;
+  border-radius: 20px;
   background: linear-gradient(150deg, var(--tile-a) 0%, var(--tile-b) 55%, var(--tile-c) 100%);
   color: var(--ink, #fff);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 14px 30px rgba(0, 0, 0, 0.36);
-  outline: 5px solid transparent;
-  transform: scale(1);
-  /* Only cheap properties animate: shadows are swapped instantly, which a TV GPU handles better. */
-  transition: transform 280ms var(--ease-out), outline-color 160ms linear, opacity 200ms linear;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 8px 18px rgba(0, 0, 0, 0.3);
+  outline: 3px solid transparent;
+  outline-offset: 2px;
+  transform: scale(1) translateZ(0);
+  transition: transform 90ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 90ms ease-out, outline-color 80ms ease-out;
+  will-change: transform;
 }
-/* Square tiles, so the apps' own square logos fill them edge to edge. */
-.row--big .tile { width: 208px; height: 208px; margin-right: 28px; border-radius: 42px; }
-.row--small .tile { width: 146px; height: 146px; margin-right: 22px; border-radius: 30px; }
+/* Square tiles, smaller and sleeker: */
+.row--big .tile { width: 154px; height: 154px; margin-right: 20px; border-radius: 30px; }
+.row--small .tile { width: 108px; height: 108px; margin-right: 16px; border-radius: 22px; }
 .tile:last-child { margin-right: 0; }
 
 .tile-img {
@@ -674,6 +726,7 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: inherit;
 }
 
 /* A soft top light and a hairline edge over every logo, so they sit together as one set. */
@@ -696,22 +749,22 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  top: 22px;
+  top: 16px;
   font-family: 'Fraunces', serif;
-  font-size: 104px;
+  font-size: 76px;
   font-weight: 500;
   line-height: 1;
   font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 0;
   text-align: center;
 }
-.row--small .tile-initial { top: 14px; font-size: 72px; }
+.row--small .tile-initial { top: 10px; font-size: 52px; }
 
 .tile-name {
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: 18px;
-  font-size: 24px;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  font-size: 19px;
   font-weight: 700;
   line-height: 1.1;
   text-align: center;
@@ -719,51 +772,73 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.row--small .tile-name { bottom: 12px; font-size: 18px; }
+.row--small .tile-name { bottom: 8px; font-size: 14px; }
 
 /* A sweep of light across a tile when it is selected. */
 .tile::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  background: linear-gradient(105deg, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0.28) 49%, rgba(255, 255, 255, 0) 66%);
-  transform: translateX(-140%);
-  pointer-events: none;
+  display: none !important;
 }
-.tile.is-focused::after { animation: shine 820ms var(--ease-out) 80ms 1 backwards; }
 
 .tile.is-focused {
-  --fs: 1.1;
-  z-index: 2;
-  transform: scale(1.1);
-  outline-color: var(--paper);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), 0 26px 64px var(--shadow, rgba(0, 0, 0, 0.5));
-  /* A slow breath once it has settled, so the selection feels alive. */
-  animation: breathe-tile 3.4s ease-in-out 300ms infinite alternate;
+  z-index: 10;
+  transform: scale(1.12) translateY(-6px) translateZ(0);
+  outline: 3.5px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.5),
+    0 0 24px 2px var(--glow-intense, rgba(255, 255, 255, 0.65)),
+    0 8px 40px 6px var(--glow-ambient, rgba(255, 255, 255, 0.45)),
+    0 18px 65px 12px var(--glow-diffuse, rgba(0, 0, 0, 0.3)),
+    0 22px 60px rgba(0, 0, 0, 0.7);
+  animation: none !important;
 }
-.row--small .tile.is-focused { --fs: 1.12; transform: scale(1.12); }
+.row--small .tile.is-focused {
+  transform: scale(1.14) translateY(-5px) translateZ(0);
+}
 
 .tile.is-moving {
   z-index: 3;
-  transform: scale(1.1) translateY(-16px);
+  transform: scale(1.08) translateY(-12px);
   outline-color: var(--paper);
-  box-shadow: 0 44px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6);
 }
 .row.is-arranging .tile:not(.is-moving) { opacity: 0.45; }
 
-/* ---- Caption: names the selected app, like the label beside a painting ---- */
-
+/* ---- Caption ---- */
 .caption {
   position: absolute;
   left: var(--edge);
   right: var(--edge);
-  top: 756px;
-  height: 80px;
+  top: 728px;
+  height: 60px;
   white-space: nowrap;
+}
+
+.caption-title {
+  display: inline-block;
+  font-family: 'Fraunces', serif;
+  font-size: 44px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'opsz' 96, 'SOFT' 100, 'WONK' 0;
+}
+
+.caption-note {
+  display: inline-block;
+  margin-left: 22px;
+  font-size: 24px;
+  color: var(--muted);
+}
+.caption-note.is-error { color: var(--paper); }
+
+.hint {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  font-size: 22px;
+  color: var(--faint);
+  transition: opacity 200ms linear;
 }
 
 .caption-title.is-fresh { animation: caption-in 240ms var(--ease-out); }
@@ -917,23 +992,50 @@ body {
   100% { opacity: 0; transform: translate3d(var(--m-x), var(--m-y), 0) rotate(var(--m-r)) translateX(520px); }
 }
 
-/* ---- Lean mode: the same scene, rendered cheaply enough for the TV's graphics chip ----
-   The TV runs out of fill-rate when many large translucent layers are composited every frame.
-   In lean mode nothing in the scenery animates or transitions, so it is painted once a minute
-   into one flat image; only small things keep moving, and the interface transitions are shorter. */
-.lean .godrays, .lean .aurora--two, .lean .grain, .lean .glare-ring, .lean .glare-rays--fine { display: none; }
-.lean .clouds, .lean .aurora, .lean .glare-rays, .lean .glare-halo, .lean .moon-glow,
-.lean .glitter-layer:not(.glitter-layer--alt), .lean .tile.is-focused { animation: none !important; }
-.lean .glare, .lean .moon, .lean .haze, .lean .glitter, .lean .column, .lean .godrays { transition: none !important; }
-.lean .clouds, .lean .aurora, .lean .glare-rays, .lean .glare-halo, .lean .moon-glow, .lean .fireflies i { will-change: auto; }
-.lean .twinkles i:nth-child(n+6), .lean .fireflies i:nth-child(n+6) { display: none; }
-.lean .clock { text-shadow: none; }
-.lean .glow { width: 760px; height: 380px; margin: -190px 0 0 -380px; transition: transform 300ms var(--ease-out), opacity 240ms linear; }
-.lean .tile { transition: transform 200ms var(--ease-out), outline-color 120ms linear, opacity 160ms linear; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.35); }
-.lean .tile.is-focused { box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5); }
-.lean .row { transition: transform 260ms var(--ease-out); }
-.lean .tile::after { display: none; }
-.lean .vignette { background: radial-gradient(ellipse 72% 70% at 50% 46%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.3) 100%); }
+/* ---- Projector & TV Performance Mode ------------------------------------- */
+.twinkles i,
+.is-night .twinkles i,
+.clouds,
+.clouds--wisps,
+.clouds--puffs,
+.glare-rays,
+.glare-rays--fine,
+.glare-halo,
+.moon-glow,
+.glitter-layer,
+.glitter-layer--alt,
+.ripple,
+.ripple--two,
+.aurora,
+.aurora--one,
+.aurora--two,
+.has-aurora .aurora--one,
+.has-aurora .aurora--two,
+.fireflies i,
+.has-fireflies .fireflies i,
+.tile.is-focused,
+.tile::after,
+.caption-title.is-fresh,
+.clock.is-tick {
+  animation: none !important;
+}
+
+.grain,
+.flares,
+.godrays,
+.glare-ring,
+.glare-streak,
+.glow,
+.glitter,
+.birds,
+.meteor {
+  display: none !important;
+}
+
+.screen, .stage, .row, .tile {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::after { animation: none !important; transition: none !important; }

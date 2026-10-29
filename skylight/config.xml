@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
-        id="http://skylight.home/tv" version="1.18.0" viewmodes="maximized">
+        id="http://skylight.home/tv" version="1.18.17" viewmodes="maximized">
     <!-- Lets Skylight ask the TV's own local services (on the TV itself) which apps are running. -->
     <access origin="*" subdomains="true"/>
     <tizen:application id="skylightTV.Skylight" package="skylightTV" required_version="3.0"/>
@@ -21,6 +21,7 @@
     <tizen:privilege name="http://tizen.org/privilege/internet"/>
     <tizen:privilege name="http://tizen.org/privilege/application.info"/>
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+    <tizen:privilege name="http://tizen.org/privilege/appmanager.kill.bgapp"/>
     <!-- Opening Skylight while it is already running brings it straight back instead of reloading. -->
     <tizen:app-control>
         <tizen:src name="index.html" reload="disable"/>
@@ -28,6 +29,6 @@
     </tizen:app-control>
     <!-- Background support keeps Skylight's script running while another app is on screen, so it
          can notice that app closing and come back instead of leaving you on Samsung's home. -->
-    <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="enable"
+    <tizen:setting screen-orientation="landscape" context-menu="disable" background-support="disable"
                    encryption="disable" install-location="auto" hwkey-event="enable"/>
 </widget>

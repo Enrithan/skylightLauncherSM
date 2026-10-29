@@ -14,6 +14,10 @@ tools/skylight-boot-rule.json
 .claude/
 .vscode/
 .idea/
+AGENT_HANDOFF.md
+*.log
+temp/
+tmp/
 
 # Launch material (posts, carousel, renders) that isn't part of the project
 launch/
