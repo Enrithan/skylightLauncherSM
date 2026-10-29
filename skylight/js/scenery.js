@@ -480,21 +480,31 @@ window.Scenery = (function () {
     return h + min / 60;
   }
 
-  // The quiet line under the date: real weather and sunrise/sunset, or moon phase fallback.
+  // The quiet line under the date: current city and sunrise/sunset, or weather fallback if city is unknown.
   function writeDetail(now, sunUp) {
     var tempVal = liveWeather ? (typeof liveWeather.tempC === 'number' ? liveWeather.tempC : parseFloat(liveWeather.tempC)) : NaN;
     if (liveWeather && !isNaN(tempVal)) {
-      var cond = weatherOverride ? weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1) : (typeof liveWeather.desc === 'string' ? liveWeather.desc : 'Clear');
-      var icon = weatherEmoji(weatherOverride || liveWeather.desc);
+      var city = (typeof liveWeather.city === 'string' && liveWeather.city.trim()) ? liveWeather.city.trim() : '';
       var astro = sunUp ? ('Sunset ' + formatAstroTime(liveWeather.sunset)) : ('Sunrise ' + formatAstroTime(liveWeather.sunrise));
-      detail.textContent = icon + ' ' + tempVal + '°C ' + cond + '  ·  ' + astro;
+      if (city) {
+        detail.textContent = city + '  ·  ' + astro;
+      } else {
+        var cond = weatherOverride ? weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1) : (typeof liveWeather.desc === 'string' ? liveWeather.desc : 'Clear');
+        var icon = weatherEmoji(weatherOverride || liveWeather.desc);
+        detail.textContent = icon + ' ' + tempVal + '°C ' + cond + '  ·  ' + astro;
+      }
       return;
     }
     if (weatherOverride) {
-      var iconO = weatherEmoji(weatherOverride);
-      var condO = weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1);
+      var cityO = (liveWeather && typeof liveWeather.city === 'string' && liveWeather.city.trim()) ? liveWeather.city.trim() : '';
       var astroO = sunUp ? ('Sunset ' + clock(SUNSET)) : ('Sunrise ' + clock(SUNRISE));
-      detail.textContent = iconO + ' ' + condO + '  ·  ' + astroO;
+      if (cityO) {
+        detail.textContent = cityO + '  ·  ' + astroO;
+      } else {
+        var iconO = weatherEmoji(weatherOverride);
+        var condO = weatherOverride.charAt(0).toUpperCase() + weatherOverride.slice(1);
+        detail.textContent = iconO + ' ' + condO + '  ·  ' + astroO;
+      }
       return;
     }
     var name = MOON_NAMES[Math.round(moonPhase(now) * 8) % 8];
